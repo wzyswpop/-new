@@ -159,6 +159,15 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             freight_id:'',
                             name: '',
                             is_hot:1,
+                            classify:1,
+                            is_customized:0,
+                            customized_price:0,
+                            product_area:'',
+                            bean_seed:'',
+                            special_flavour:'',
+                            processing_method:'',
+                            moisture_content:'',
+                            density:'',
                             status: 1,
                             sales:0,
                             see:0,
@@ -169,6 +178,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             category_ids_arr: [],
                             is_stock: 0,
                             money: '',
+                            line_money: '',
                             content: '',
                             weight: 0,
                             stock: '',
@@ -211,19 +221,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                 message: '请输入价格',
                                 trigger: 'blur'
                             }],
-                            freight_id: [{
-                                required: true,
-                                message: '请选择运费模板',
-                                trigger: 'blur'
-                            }],
                             stock: [{
                                 required: true,
                                 message: '请输入库存',
-                                trigger: 'blur'
-                            }],
-                            erp_goods_no: [{
-                                required: true,
-                                message: '请输入货品编号',
                                 trigger: 'blur'
                             }],
                         },

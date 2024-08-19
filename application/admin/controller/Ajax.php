@@ -48,6 +48,9 @@ class Ajax extends Backend
         }
 
         $controllername = input("controllername");
+        if(empty($controllername)){
+            $this->error('error');
+        }
         //默认只加载了控制器对应的语言名，你还根据控制器名来加载额外的语言包
         $this->loadlang($controllername);
         return jsonp(Lang::get(), 200, $header, ['json_encode_param' => JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE]);

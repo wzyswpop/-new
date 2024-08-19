@@ -523,6 +523,24 @@
                 <el-form-item label="商品标题：" prop="name">
                     <el-input type="input" v-model="goodsDetail.name" size="small"></el-input>
                 </el-form-item>
+                <el-form-item label="产区：" prop="product_area">
+                    <el-input type="input" v-model="goodsDetail.product_area" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="豆种：" prop="bean_seed">
+                    <el-input type="input" v-model="goodsDetail.bean_seed" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="风味：" prop="special_flavour">
+                    <el-input type="input" v-model="goodsDetail.special_flavour" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="处理法：" prop="processing_method">
+                    <el-input type="input" v-model="goodsDetail.processing_method" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="含水率：" prop="moisture_content">
+                    <el-input type="input" v-model="goodsDetail.moisture_content" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="密度：" prop="density">
+                    <el-input type="input" v-model="goodsDetail.density" size="small"></el-input>
+                </el-form-item>
                 <el-form-item label="商品主图：" prop="image">
                     <div class="display-flex">
                         <div class="goods-image-box display-flex" v-if="goodsDetail.image">
@@ -581,6 +599,20 @@
                         <el-radio :label="0">否</el-radio>
                     </el-radio-group>
                 </el-form-item>
+                <el-form-item label="是否是定制商品：" prop="classify">
+                    <el-radio-group v-model="goodsDetail.classify">
+                        <el-radio :label="1">意式</el-radio>
+                        <el-radio :label="2">单品</el-radio>
+                        <el-radio :label="3">拼配</el-radio>
+                        <el-radio :label="4">其他</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="是否是定制商品：" prop="is_customized">
+                    <el-radio-group v-model="goodsDetail.is_customized">
+                        <el-radio :label="0">否</el-radio>
+                        <el-radio :label="1">是</el-radio>
+                    </el-radio-group>
+                </el-form-item>
                 <el-form-item label="商品权重：" prop="weigh">
                     <el-input type="input" v-model="goodsDetail.weigh" size="small"></el-input>
                     <div class="form-tip-message" style="margin-left: 0;">权重越大越靠前</div>
@@ -608,11 +640,11 @@
                             </el-radio-group>
                         </div>
                     </el-form-item>
-                    <el-form-item label="货品编号：" prop="erp_goods_no">
+                    <el-form-item label="定制价格（每千克）：" prop="customized_price" v-if="goodsDetail.is_stock==1">
                         <div class="display-flex">
-                            <el-input type="text" v-model="goodsDetail.erp_goods_no" style="width:300px" size="small">
+                            <el-input type="text" v-model="goodsDetail.customized_price" style="width:300px" size="small">
                             </el-input>
-                            <div class="form-tip-message">旺店通货品编号</div>
+                            <div class="form-tip-message">非定制商品填写0即可</div>
                         </div>
                     </el-form-item>
                     <el-form-item label="售卖价格：" prop="money" v-if="goodsDetail.is_stock==1">
@@ -628,15 +660,11 @@
                             </el-input>
                         </div>
                     </el-form-item>
-                    <el-form-item label="运费模板：" prop="freight_id">
-                        <el-select v-model="goodsDetail.freight_id" placeholder="请选择">
-                            <el-option
-                                    v-for="item in freight_list"
-                                    :key="item.id"
-                                    :label="item.name"
-                                    :value="item.id">
-                            </el-option>
-                        </el-select>
+                    <el-form-item label="划线价格：" prop="line_money">
+                        <div class="display-flex">
+                            <el-input type="number" v-model="goodsDetail.line_money" style="width:300px" size="small">
+                            </el-input>
+                        </div>
                     </el-form-item>
 
                 </div>
