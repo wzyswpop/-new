@@ -3,14 +3,13 @@
         min-height: 210px;
     }
 </style>
-<!-- Header Carousel -->
+
 <header id="myCarousel" class="carousel slide">
-    <!-- Indicators -->
+
     <ol class="carousel-indicators">
         <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
     </ol>
 
-    <!-- Wrapper for slides -->
     <div class="carousel-inner">
         <div class="item active">
             <a href="javascript:">
@@ -27,7 +26,6 @@
     </div>
 </header>
 
-<!-- Page Content -->
 <div class="container">
 
     <div class="row" id="prepare">
@@ -64,11 +62,12 @@
                     <h4><i class="fa fa-fw fa-compass"></i> 开始测试</h4>
                 </div>
                 <div class="panel-body">
-                    <p>请选择对应的支付金额和支付方式</p>
-                    <p>
+                    <form method="post" action="{:addon_url('epay/index/experience')}">
+                        <input type="hidden" name="type" value="alipay">
+                        <p>请选择对应的支付金额和支付方式</p>
+                        <p>
                         <span class="input-group">
-                            <input type="number" name="amount" step="0.01" value="1.01"
-                                   class="form-control" placeholder="请输入一个随机金额"/>
+                            <input type="number" name="amount" step="0.01" value="1.01" class="form-control" placeholder="金额"/>
                             <span class="input-group-addon" style="padding:0;width:150px;">
                                 <select class="form-control" name="method" id="method" style="border:none;height: 32px;">
                                     <option value="web">PC网页支付</option>
@@ -79,14 +78,30 @@
                                     <option value="miniapp">小程序支付(不支持支付宝)</option>
                                 </select>
                             </span>
+                            <input type="text" class="form-control hidden" name="openid" placeholder="openid"/>
                         </span>
-                    </p>
-                    <button data-type="alipay" class="btn btn-info btn-experience"><i class="fa fa-money"></i> 支付宝支付</button>
-                    <button data-type="wechat" class="btn btn-success btn-experience"><i class="fa fa-wechat"></i> 微信支付</button>
+                        </p>
+                        <button type="button" data-type="alipay" class="btn btn-info btn-experience"><i class="fa fa-money"></i> 支付宝支付</button>
+                        <button type="button" data-type="wechat" class="btn btn-success btn-experience"><i class="fa fa-wechat"></i> 微信支付</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    <!-- /.row -->
-
 </div>
+<script type="text/javascript">
+    document.querySelectorAll(".btn-experience").forEach(function(btn){
+        btn.addEventListener("click", function () {
+            $("input[name=type]").val($(this).data("type"));
+            $(this).closest("form").trigger("submit");
+        });
+    });
+    document.querySelector("#method").addEventListener("change", function () {
+        if ($(this).val() === 'mp' || $(this).val() === 'miniapp') {
+            $("input[name=openid]").removeClass("hidden");
+        } else {
+            $("input[name=openid]").addClass("hidden");
+        }
+        $("button[data-type='alipay']").prop("disabled", $(this).val() === 'mp' || $(this).val() === 'miniapp');
+    });
+</script>

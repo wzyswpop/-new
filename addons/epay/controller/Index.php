@@ -17,7 +17,6 @@ use Exception;
  */
 class Index extends Controller
 {
-
     protected $layout = 'default';
 
     protected $config = [];
@@ -41,9 +40,10 @@ class Index extends Controller
      */
     public function experience()
     {
-        $amount = $this->request->request('amount');
-        $type = $this->request->request('type');
-        $method = $this->request->request('method');
+        $amount = $this->request->post('amount');
+        $type = $this->request->post('type');
+        $method = $this->request->post('method');
+        $openid = $this->request->post('openid', "");
 
         if (!$amount || $amount < 0) {
             $this->error("支付金额必须大于0");
@@ -51,6 +51,10 @@ class Index extends Controller
 
         if (!$type || !in_array($type, ['alipay', 'wechat'])) {
             $this->error("支付类型不能为空");
+        }
+
+        if (in_array($method, ['miniapp', 'mp']) && !$openid) {
+            $this->error("openid不能为空");
         }
 
         //订单号
@@ -63,7 +67,7 @@ class Index extends Controller
         $notifyurl = $this->request->root(true) . '/addons/epay/index/notifyx/paytype/' . $type;
         $returnurl = $this->request->root(true) . '/addons/epay/index/returnx/paytype/' . $type . '/out_trade_no/' . $out_trade_no;
 
-        $response = Service::submitOrder($amount, $out_trade_no, $type, $title, $notifyurl, $returnurl, $method);
+        $response = Service::submitOrder($amount, $out_trade_no, $type, $title, $notifyurl, $returnurl, $method, $openid);
 
         return $response;
     }
@@ -76,20 +80,37 @@ class Index extends Controller
         $paytype = $this->request->param('paytype');
         $pay = Service::checkNotify($paytype);
         if (!$pay) {
-            echo '签名错误';
-            return;
+            return json(['code' => 'FAIL', 'message' => '失败'], 500, ['Content-Type' => 'application/json']);
         }
-        $data = $pay->verify();
+
+        // 获取回调数据，V3和V2的回调接收不同
+        $data = Service::isVersionV3() ? $pay->callback() : $pay->verify();
+
         try {
+            //微信支付V3返回和V2不同
+            if (Service::isVersionV3() && $paytype === 'wechat') {
+                $data = $data['resource']['ciphertext'];
+                $data['total_fee'] = $data['amount']['total'];
+            }
+
+            \think\Log::record($data);
+            //获取支付金额、订单号
             $payamount = $paytype == 'alipay' ? $data['total_amount'] : $data['total_fee'] / 100;
             $out_trade_no = $data['out_trade_no'];
 
+            \think\Log::record("回调成功，订单号：{$out_trade_no}，金额：{$payamount}");
+
             //你可以在此编写订单逻辑
         } catch (Exception $e) {
+            \think\Log::record("回调逻辑处理错误:" . $e->getMessage(), "error");
         }
 
         //下面这句必须要执行,且在此之前不能有任何输出
-        return $pay->success()->send();
+        if (Service::isVersionV3()) {
+            return $pay->success()->getBody()->getContents();
+        } else {
+            return $pay->success()->send();
+        }
     }
 
     /**
@@ -104,10 +125,7 @@ class Index extends Controller
             $this->error('签名错误', '');
         }
 
-        //你可以在这里通过out_trade_no去验证订单状态
-        //但是不可以在此编写订单逻辑！！！
-
+        //你可以在这里定义你的提示信息,但切记不可在此编写逻辑
         $this->success("请返回网站查看支付结果", addon_url("epay/index/index"));
     }
-
 }

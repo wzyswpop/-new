@@ -6,6 +6,7 @@ use addons\epay\library\Service;
 use addons\epay\library\Wechat;
 use addons\third\model\Third;
 use app\common\library\Auth;
+use Exception;
 use think\addons\Controller;
 use think\Response;
 use think\Session;
@@ -40,7 +41,7 @@ class Api extends Controller
         $out_trade_no = $this->request->request("out_trade_no");
         $title = $this->request->request("title");
         $amount = $this->request->request('amount');
-        $type = $this->request->request('type');
+        $type = $this->request->request('type', $this->request->request('paytype'));
         $method = $this->request->request('method', 'web');
         $openid = $this->request->request('openid', '');
         $auth_code = $this->request->request('auth_code', '');
@@ -71,7 +72,6 @@ class Api extends Controller
 
     /**
      * 微信支付(公众号支付&PC扫码支付)
-     * @return string
      */
     public function wechat()
     {
@@ -87,14 +87,10 @@ class Api extends Controller
             $pay = Pay::wechat($config);
             $orderid = $this->request->post("orderid");
             try {
-                $result = $pay->find($orderid, 'scan');
-                if ($result['return_code'] == 'SUCCESS' && $result['result_code'] == 'SUCCESS') {
-                    $this->success("", "", ['status' => $result['trade_state']]);
-                } else {
-                    $this->error("查询失败");
-                }
+                $result = Service::isVersionV3() ? $pay->find(['out_trade_no' => $orderid]) : $pay->find($orderid, 'scan');
+                $this->success("", "", ['status' => $result['trade_state'] ?? 'NOTPAY']);
             } catch (GatewayException $e) {
-                $this->error("查询失败");
+                $this->error("查询失败(1001)");
             }
         }
 
@@ -134,7 +130,6 @@ class Api extends Controller
 
     /**
      * 支付宝支付(PC扫码支付)
-     * @return string
      */
     public function alipay()
     {
@@ -149,14 +144,14 @@ class Api extends Controller
             $orderid = $this->request->post("orderid");
             $pay = Pay::alipay($config);
             try {
-                $result = $pay->find($orderid, 'scan');
+                $result = $pay->find(['out_trade_no' => $orderid]);
                 if ($result['code'] == '10000' && $result['trade_status'] == 'TRADE_SUCCESS') {
                     $this->success("", "", ['status' => $result['trade_status']]);
                 } else {
                     $this->error("查询失败");
                 }
             } catch (GatewayException $e) {
-                $this->error("查询失败");
+                $this->error("查询失败(1001)");
             }
         }
 
@@ -185,17 +180,40 @@ class Api extends Controller
      */
     public function notifyx()
     {
-        $type = $this->request->param('type');
-        $pay = \addons\epay\library\Service::checkNotify($type);
+        $paytype = $this->request->param('paytype');
+        $pay = Service::checkNotify($paytype);
         if (!$pay) {
-            echo '签名错误';
-            return;
+            return json(['code' => 'FAIL', 'message' => '失败'], 500, ['Content-Type' => 'application/json']);
         }
-        $data = $pay->verify();
 
-        //你可以在这里你的业务处理逻辑,比如处理你的订单状态、给会员加余额等等功能
+        // 获取回调数据，V3和V2的回调接收不同
+        $data = Service::isVersionV3() ? $pay->callback() : $pay->verify();
+
+        try {
+            //微信支付V3返回和V2不同
+            if (Service::isVersionV3() && $paytype === 'wechat') {
+                $data = $data['resource']['ciphertext'];
+                $data['total_fee'] = $data['amount']['total'];
+            }
+
+            \think\Log::record($data);
+            //获取支付金额、订单号
+            $payamount = $paytype == 'alipay' ? $data['total_amount'] : $data['total_fee'] / 100;
+            $out_trade_no = $data['out_trade_no'];
+
+            \think\Log::record("回调成功，订单号：{$out_trade_no}，金额：{$payamount}");
+
+            //你可以在此编写订单逻辑
+        } catch (Exception $e) {
+            \think\Log::record("回调逻辑处理错误:" . $e->getMessage(), "error");
+        }
+
         //下面这句必须要执行,且在此之前不能有任何输出
-        return $pay->success()->send();
+        if (Service::isVersionV3()) {
+            return $pay->success()->getBody()->getContents();
+        } else {
+            return $pay->success()->send();
+        }
     }
 
     /**
@@ -203,16 +221,14 @@ class Api extends Controller
      */
     public function returnx()
     {
-        $type = $this->request->param('type');
-        if (Service::checkReturn($type)) {
+        $paytype = $this->request->param('paytype');
+        if (Service::checkReturn($paytype)) {
             echo '签名错误';
             return;
         }
 
         //你可以在这里定义你的提示信息,但切记不可在此编写逻辑
         $this->success("恭喜你！支付成功!", addon_url("epay/index/index"));
-
-        return;
     }
 
 }

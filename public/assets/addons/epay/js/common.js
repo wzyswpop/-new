@@ -6,12 +6,6 @@ $(function () {
         });
     }
 
-    if ($(".btn-experience").length > 0) {
-        $(".btn-experience").on("click", function () {
-            location.href = "/addons/epay/index/experience?amount=" + $("input[name=amount]").val() + "&type=" + $(this).data("type") + "&method=" + $("#method").val();
-        });
-    }
-
     if ($(".qrcode").length > 0) {
         $(".qrcode").qrcode({width: 250, height: 250, text: $(".qrcode").data("text")});
     }

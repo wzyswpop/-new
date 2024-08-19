@@ -2,6 +2,7 @@
 
 namespace addons\epay;
 
+use addons\epay\library\Service;
 use think\Addons;
 use think\Config;
 use think\Loader;
@@ -18,7 +19,6 @@ class Epay extends Addons
      */
     public function install()
     {
-
         return true;
     }
 
@@ -28,7 +28,6 @@ class Epay extends Addons
      */
     public function uninstall()
     {
-
         return true;
     }
 
@@ -38,7 +37,6 @@ class Epay extends Addons
      */
     public function enable()
     {
-
         return true;
     }
 
@@ -48,22 +46,55 @@ class Epay extends Addons
      */
     public function disable()
     {
-
         return true;
     }
 
-    /**
-     * 添加命名空间
-     */
-    public function appInit()
+    // 支持自定义加载
+    public function epayConfigInit()
+    {
+        $this->actionBegin();
+    }
+
+    // 插件方法加载开始
+    public function addonActionBegin()
+    {
+        $this->actionBegin();
+    }
+
+    // 模块控制器方法加载开始
+    public function actionBegin()
     {
         //添加命名空间
         if (!class_exists('\Yansongda\Pay\Pay')) {
-            Loader::addNamespace('Yansongda\Pay', ADDON_PATH . 'epay' . DS . 'library' . DS . 'Yansongda' . DS . 'Pay' . DS);
-        }
-        if (!class_exists('\Yansongda\Supports\Logger')) {
-            Loader::addNamespace('Yansongda\Supports', ADDON_PATH . 'epay' . DS . 'library' . DS . 'Yansongda' . DS . 'Supports' . DS);
+
+            //SDK版本
+            $version = Service::getSdkVersion();
+
+            $libraryDir = ADDON_PATH . 'epay' . DS . 'library' . DS;
+            Loader::addNamespace('Yansongda\Pay', $libraryDir . $version . DS . 'Yansongda' . DS . 'Pay' . DS);
+
+            $checkArr = [
+                '\Hyperf\Context\Context'     => 'context',
+                '\Hyperf\Contract\Castable'   => 'contract',
+                '\Hyperf\Engine\Constant'     => 'engine',
+                '\Hyperf\Macroable\Macroable' => 'macroable',
+                '\Hyperf\Pimple\Container'    => 'pimple',
+                '\Hyperf\Utils\Arr'           => 'utils',
+            ];
+            foreach ($checkArr as $index => $item) {
+                if (!class_exists($index)) {
+                    Loader::addNamespace(substr($index, 1, strrpos($index, '\\') - 1), $libraryDir . 'hyperf' . DS . $item . DS . 'src' . DS);
+                }
+            }
+
+            if (!class_exists('\Yansongda\Supports\Logger')) {
+                Loader::addNamespace('Yansongda\Supports', $libraryDir . $version . DS . 'Yansongda' . DS . 'Supports' . DS);
+            }
+
+            // V3需载入辅助函数
+            if ($version == Service::SDK_VERSION_V3) {
+                require_once $libraryDir . $version . DS . 'Yansongda' . DS . 'Pay' . DS . 'Functions.php';
+            }
         }
     }
-
 }

@@ -3,7 +3,13 @@
 return [
     'autoload' => false,
     'hooks' => [
-        'app_init' => [
+        'epay_config_init' => [
+            'epay',
+        ],
+        'addon_action_begin' => [
+            'epay',
+        ],
+        'action_begin' => [
             'epay',
         ],
         'wipecache_after' => [

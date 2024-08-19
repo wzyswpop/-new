@@ -1,7 +1,7 @@
 <?php
 
 return array (
-  'name' => '闪光者旗舰店',
+  'name' => '咖啡',
   'beian' => '',
   'cdnurl' => '',
   'version' => '1.0.2',
@@ -49,10 +49,10 @@ return array (
     'category2' => '分类二',
     'custom' => '自定义',
   ),
-  'miniapp_id' => 'wx7b7f57f8a04b28c9',
-  'miniapp_secret' => 'e076c702d73e48fc4553555cd646dd59',
-  'mch_id' => '1648191030',
-  'key' => 'HENANSANNUOFOOD13598017998xiangd',
+  'miniapp_id' => 'wx08a51c98ccd97cac',
+  'miniapp_secret' => '1c8c356445592e827a6c4a5d07baf013',
+  'mch_id' => '1395961502',
+  'key' => 'oy0NMSG41G5OzrzJGOsXg2WIcsJ9ikvL',
   'cert_client' => '',
   'cert_key' => '',
   'overtime' => '60',

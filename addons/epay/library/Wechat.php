@@ -58,7 +58,7 @@ class Wechat
                     if (!isset($token['openid']) && isset($token['errmsg'])) {
                         exception($token['errmsg']);
                     }
-                    $openid = isset($token['openid']) ? $token['openid'] : '';
+                    $openid = $token['openid'] ?? '';
                     if ($openid) {
                         Session::set("openid", $openid);
                     }
