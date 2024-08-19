@@ -14,8 +14,7 @@ class Goods extends Validate
         'category_id' => 'require',
         'image' => 'require',
         'images' => 'require',
-        'money' => 'require',
-        'freight_id' => 'require'
+        'money' => 'require'
     ];
     /**
      * 提示消息
@@ -25,15 +24,14 @@ class Goods extends Validate
         'category_id.require' => '所属分类必须选择',
         'image.require' => '商品主图必须上传',
         'images.require' => '至少上传一张轮播图',
-        'money.require' => '价格必须填写',
-        'freight_id.require' => '请选择运费模板'
+        'money.require' => '价格必须填写'
     ];
     /**
      * 验证场景
      */
     protected $scene = [
-        'add'  => ['name', 'image', 'images', 'category_ids','money','freight_id'],
-        'edit' => ['name', 'image', 'images', 'category_ids','money','freight_id'],
+        'add'  => ['name', 'image', 'images', 'category_ids','money'],
+        'edit' => ['name', 'image', 'images', 'category_ids','money'],
     ];
 
 }
