@@ -1,0 +1,69 @@
+<table class="table table-striped">
+    <tbody>
+    <tr>
+        <td>状态:</td>
+        <td>
+            {switch name="row.status"}
+            {case value="1"}<span class="label label-info">{:__('Status '.$row.status)}</span>{/case}
+            {case value="2"}<span class="label label-primary">{:__('Status '.$row.status)}</span>{/case}
+            {case value="3"}<span class="label label-warning">{:__('Status '.$row.status)}</span>{/case}
+            {/switch}
+        </td>
+    </tr>
+    <tr>
+        <td>提现方式</td>
+        <td>{$row.bank_name|htmlentities}</td>
+    </tr>
+    <tr>
+        <td>提现类型</td>
+        <td>
+            {switch name="row.type"}
+            {case value="1"}<span class="label label-info">佣金</span>{/case}
+            {case value="2"}<span class="label label-primary">余额</span>{/case}
+            {/switch}
+        </td>
+    </tr>
+    <tr>
+        <td>账号</td>
+        <td>{$row.card_id|htmlentities}</td>
+    </tr>
+    <tr>
+        <td>姓名</td>
+        <td>{$row.name|htmlentities}</td>
+    </tr>
+    <tr>
+        <td>提现金额</td>
+        <td>{$row.money|htmlentities}</td>
+    </tr>
+    <tr>
+        <td>服务费</td>
+        <td>{$row.service_charge|htmlentities}</td>
+    </tr>
+    <tr>
+        <td>应到账金额</td>
+        <td>{$row.amount_received|htmlentities}</td>
+    </tr>
+    <tr>
+        <td>申请时间</td>
+        <td>{$row.createtime|date="Y-m-d H:i:s",###}</td>
+    </tr>
+    {if $row.handletime}
+    <tr>
+        <td>处理时间</td>
+        <td>{$row.handletime|date="Y-m-d H:i:s",###}</td>
+    </tr>
+    {/if}
+    {if $row.status == 3}
+    <tr>
+        <td>拒绝原因</td>
+        <td>{$row.memo|htmlentities}</td>
+    </tr>
+    {/if}
+    </tbody>
+</table>
+<div class="form-group layer-footer">
+    <label class="control-label col-xs-12 col-sm-2"></label>
+    <div class="col-xs-12 col-sm-8">
+        <button type="reset" class="btn btn-primary btn-embossed btn-close" onclick="Layer.closeAll();">{:__('Close')}</button>
+    </div>
+</div>

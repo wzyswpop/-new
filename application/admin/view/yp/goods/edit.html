@@ -1,0 +1,854 @@
+<link rel="stylesheet" href="__CDN__/assets/libs/element/libs/element/element.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/element/libs/common.css">
+<script src="__CDN__/assets/libs/element/libs/vue.js"></script>
+<script src="__CDN__/assets/libs/element/libs/element/element.js"></script>
+<script src="__CDN__/assets/libs/element/libs/moment.js"></script>
+<style>
+    .el-upload__input{
+        display: none !important;
+    }
+    #goodsIndex {
+        background: #fff;
+        padding: 0 20px;
+        overflow: auto;
+        color: #666;
+    }
+
+    .btn-common {
+        line-height: 32px;
+        height: 32px;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-params,
+    .add-level1-sku {
+        width: 98px;
+        background: #7536D0;
+        color: #fff;
+    }
+
+    .add-params span,
+    .add-level1-sku span {
+        margin-left: 8px;
+    }
+
+    /* el-step */
+    .el-step.is-simple .el-step__title {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .el-step.is-simple .el-step__icon {
+        display: none;
+    }
+
+    .el-step__title.is-finish {
+        color: #7438D5;
+    }
+
+    .el-step__title.is-process {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .el-step__title.is-wait {
+        color: #999;
+    }
+
+    .el-form-item {
+        margin-bottom: 20px;
+    }
+
+    .good-detail-body {
+        padding: 20px 10px 10px 5px;
+        height: calc(100vh - 148px);
+        overflow: auto;
+    }
+
+    .add-img {
+        width: 60px;
+        height: 60px;
+        border: 1px dashed #E6E6E6;
+        border-radius: 4px;
+        justify-content: center;
+        margin-right: 30px;
+        margin-bottom: 10px;
+    }
+
+    .form-tip-message {
+        margin-left: 30px;
+        color: #999;
+    }
+
+
+    .back-button {
+        width: 88px;
+        height: 36px;
+        line-height: 36px;
+        text-align: center;
+        margin-right: 20px;
+        color: #999;
+        cursor: pointer;
+    }
+
+    .submit-button {
+        width: 88px;
+        height: 36px;
+        line-height: 36px;
+        text-align: center;
+        background: #7438D5;
+        font-size: 14px;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .goods-detail-table {
+        border: 1px solid #E6E6E6;
+        border-bottom: none;
+        margin-bottom: 20px;
+    }
+
+    .goods-detail-item {
+        border-bottom: 1px solid #E6E6E6;
+    }
+
+    .goods-detail-item>div {
+        padding: 5px 10px;
+    }
+
+    .goods-detail-name {
+        width: 120px;
+    }
+
+    .goods-detail-msg {
+        width: 378px;
+    }
+
+    .goods-detail-del,
+    .goods-detail-move {
+        width: 50px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .goods-detail-del-icon {
+        color: #ff5959;
+    }
+
+    .delete-image-button {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        line-height: 14px;
+        text-align: center;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 600;
+        background: #7438D5;
+        color: #fff;
+        top: -7px;
+        right: -7px;
+    }
+
+    .goods-images {
+        width: 60px;
+        height: 60px;
+        border-radius: 4px;
+        position: relative;
+        border: 1px solid #7438D5;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+
+    .goods-image {
+        margin-right: 0;
+    }
+
+    .label-auto {
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .add-sku-box {
+        padding: 10px 8px;
+        border: 1px solid #E6E6E6;
+    }
+
+    .sku-item {
+        background: #F9F9F9;
+        height: 50px;
+        padding: 10px;
+    }
+
+    .sku-item-level {
+        height: auto;
+        background: #fff;
+        padding: 10px 20px;
+    }
+
+    .sku-item-level2 {
+        height: auto;
+        padding: 0;
+        width: 600px;
+        background: #fff;
+        display: flex;
+        flex-wrap: wrap;
+        line-height: 30px;
+    }
+
+    .sku-children {
+        margin-right: 18px;
+        position: relative;
+        width: 120px;
+        margin-bottom: 10px;
+    }
+
+    .sku-children-del {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #7536D0;
+        color: #fff;
+        font-weight: 600;
+        justify-content: center;
+    }
+
+    .sku-img {
+        width: 34px;
+        height: 34px;
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .sku-img i {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        background: #7536D0;
+        color: #fff;
+        font-weight: 600;
+        justify-content: center;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .table-box {
+        border: 1px solid #E6E6E6;
+        margin: 20px 0;
+        border-bottom: none;
+    }
+
+    .table-upload-img {
+        width: 34px;
+        height: 34px;
+        color: #E6E6E6;
+        border-radius: 2px;
+        border: 1px solid #E6E6E6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .all-edit-img {
+        width: 14px;
+        height: 14px;
+        margin-left: 6px;
+    }
+
+    .sku-status {
+        cursor: pointer;
+    }
+
+    .w-e-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .el-cascader,
+    .el-select {
+        width: 100%;
+    }
+
+    .el-popover .el-input {
+        margin-bottom: 10px;
+    }
+
+
+    .el-popover .el-button--text {
+        color: #7536D0;
+    }
+
+    .color-999 {
+        color: #999;
+    }
+
+    .popover-container>p {
+        margin-bottom: 10px;
+    }
+
+    .question-tip {
+        font-size: 24px;
+        color: #ccc;
+        margin-left: 18px;
+    }
+
+    .el-radio {
+        margin-right: 12px;
+    }
+
+    .flex-1 {
+        flex: 1;
+    }
+
+    .create-template {
+        margin-left: 44px;
+        cursor: pointer;
+        color: #7536D0;
+    }
+
+    .el-tabs__content {
+        height: 190px;
+        overflow: auto;
+    }
+
+    /* .category-inputs input,
+    .category-inputs:focus input,
+    .category-inputs:hover input {
+        background: none;
+        border: none;
+        border-color: rgba(0, 0, 0, 0) !important;
+        width: 120px;
+        height: 32px;
+    } */
+
+    .el-tag+.el-tag {
+        margin-left: 10px;
+    }
+
+    .el-tag {
+        margin-right: 10px;
+        background: rgba(157, 96, 255, 0.1);
+        border: 1px solid #9D60FF;
+        color: #A268FF;
+    }
+
+    .el-tag .el-tag__close,
+    .el-tag .el-tag__close:hover {
+        color: #7438D5;
+        background: rgba(0, 0, 0, 0);
+    }
+
+    .button-new-tag {
+        height: 32px;
+        line-height: 30px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .input-new-tag {
+        width: 90px;
+        vertical-align: bottom;
+    }
+
+    .el-input-group__append {
+        line-height: 30px !important;
+    }
+
+    .form-goods-input {
+        width: 300px;
+    }
+
+    .from-activity_date {
+        width: 400px;
+        height: 40px;
+    }
+
+    .table-sku {
+        width: 100%;
+        max-width: 100%;
+        overflow-y: auto;
+    }
+
+    .tale-sku-item,
+    .sku-image,
+    .sku-store-take,
+    .sku-price,
+    .sku-activity-price,
+    .sku-stock,
+    .sku-weight,
+    .sku-sn,
+    .sku-operation {
+        padding: 10px;
+        flex-shrink: 0;
+        justify-content: center;
+        border-bottom: 1px solid #e6e6e6;
+        height: 54px;
+    }
+
+    .tale-sku-item {
+        flex: 1;
+        min-width: 80px;
+    }
+
+    .sku-image {
+        width: 48px;
+    }
+
+    .sku-store-take {
+        width: 300px;
+    }
+
+    .sku-store-take .el-select {
+        width: 70px;
+        margin-right: 10px;
+    }
+
+    .sku-store-take .el-input {
+        width: 70px;
+    }
+
+    .sku-activity-price {
+        width: 140px;
+    }
+
+    .sku-price,
+    .sku-stock,
+    .sku-weight,
+    .sku-sn,
+    .sku-operation {
+        width: 90px;
+    }
+
+    .category-blank {
+        width: 100%;
+        text-align: center;
+    }
+
+    .category-tag-container {
+        flex-wrap: wrap;
+        border: 1px solid #e6e6e6;
+        border-radius: 4px;
+        padding: 5px;
+        height: 40px;
+        min-width: 300px;
+    }
+
+    .category-tag-item {
+        margin-right: 5px;
+        bottom: 5px;
+        height: 28px;
+        line-height: 28px;
+        padding: 0 5px;
+        border: 1px solid #e6e6e6;
+        border-radius: 4px;
+        background: #f9f9f9;
+    }
+
+    .delete-main-sku {
+        width: 20px;
+        height: 20px;
+    }
+
+    .add-child-sku {
+        color: #7536D0;
+        cursor: pointer;
+    }
+
+    .popover-button-container {
+        text-align: right;
+        margin: 0
+    }
+
+    .control-label {
+        width: 100px;
+        padding-right: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #606266;
+    }
+
+    .editor-container {
+        margin: 0;
+        align-items: flex-start;
+    }
+
+    .goods-part-title {
+        font-size: 16px;
+        margin: 40px 0 10px 20px;
+        font-weight: 600;
+    }
+
+    .goods-part-title-first {
+        margin-top: 0;
+    }
+
+    .sku-store-take-switch {
+        margin-left: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .el-popover-tip-message {
+        margin-left: 10px;
+    }
+
+    .table-stock-warning-switch .el-switch {
+        margin-right: 18px;
+    }
+
+    [v-cloak] {
+        display: none
+    }
+</style>
+<div id="goodsDetail" class="open-page-container common-container-scrollbar" v-cloak>
+    <div class="preview-body">
+        <div class="good-detail-body common-container-scrollbar">
+            <el-form :model="goodsDetail" :rules="rules" ref="goodsDetail" label-width="110px">
+                <el-form-item label="商品分类：" prop="category_id">
+                    <el-cascader :options="categoryOptions" v-model="goodsDetail.category_ids_arr" :show-all-levels="false" @change="panelChange"></el-cascader>
+                </el-form-item>
+                </el-form-item>
+                <el-form-item label="商品标题：" prop="name">
+                    <el-input type="input" v-model="goodsDetail.name" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="商品主图：" prop="image">
+                    <div class="display-flex">
+                        <div class="goods-image-box display-flex" v-if="goodsDetail.image">
+                            <div class="goods-images goods-image">
+                                <el-image class="label-auto" :src="Fast.api.cdnurl(goodsDetail.image)" fit="cover">
+                                    <div slot="error" class="image-slot">
+                                        <i class="el-icon-picture-outline"></i>
+                                    </div>
+                                </el-image>
+                                <div class="delete-image-button" @click="delImg('image',null)">
+                                    <img class="label-auto" src="/assets/img/yp/close.png">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-img display-flex" @click="addImg('image',null,false)"
+                             v-if="!goodsDetail.image">
+                            <i class="el-icon-plus"></i>
+                        </div>
+                        <div class="form-tip-message">作用于商城列表；建议尺寸：340*335像素</div>
+                    </div>
+                </el-form-item>
+                <el-form-item label="轮播图：" prop="images">
+                    <div class="display-flex" style="flex-wrap: wrap;">
+                        <div class="goods-image-box display-flex" style="flex-wrap: wrap;"
+                             v-if="goodsDetail.images_arr">
+                            <draggable class="display-flex" :list="goodsDetail.images_arr" v-bind="$attrs"
+                                       :options="{animation:500}">
+                                <div class="goods-images" v-for="(it,index) in goodsDetail.images_arr">
+                                    <el-image class="label-auto" :src="Fast.api.cdnurl(it)" fit="cover">
+                                        <div slot="error" class="image-slot">
+                                            <i class="el-icon-picture-outline"></i>
+                                        </div>
+                                    </el-image>
+                                    <div class="delete-image-button" @click="delImg('images',index)">
+                                        <img class="label-auto" src="/assets/img/yp/close.png">
+                                    </div>
+                                </div>
+                            </draggable>
+                        </div>
+                        <div class="add-img display-flex" @click="addImg('images',null,true)"
+                             v-if="!goodsDetail.images_arr || goodsDetail.images_arr.length<9">
+                            <i class="el-icon-plus"></i>
+                        </div>
+                        <div class="form-tip-message" style="margin-left: 0;">作用于商品详情顶部轮播;建议 750*750 像素</div>
+                    </div>
+                </el-form-item>
+                <el-form-item label="商品状态：" prop="status">
+                    <el-radio-group v-model="goodsDetail.status">
+                        <el-radio :label="1">上架</el-radio>
+                        <el-radio :label="2">隐藏</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="是否热销：" prop="is_hot">
+                    <el-radio-group v-model="goodsDetail.is_hot">
+                        <el-radio :label="1">是</el-radio>
+                        <el-radio :label="2">否</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+
+                <el-form-item label="商品权重：" prop="weigh">
+                    <el-input type="input" v-model="goodsDetail.weigh" size="small"></el-input>
+                    <div class="form-tip-message" style="margin-left: 0;">权重越大越靠前</div>
+                </el-form-item>
+
+                <el-form-item label="销量：" prop="sales">
+                    <div class="display-flex">
+                        <el-input type="number" v-model="goodsDetail.sales" style="width:300px;" size="small">
+                        </el-input>
+                    </div>
+                </el-form-item>
+                <el-form-item label="浏览量：" prop="see">
+                    <div class="display-flex">
+                        <el-input type="number" v-model="goodsDetail.see" style="width:300px;" size="small">
+                        </el-input>
+                    </div>
+                </el-form-item>
+                <div>
+                    <div class="goods-part-title goods-part-title-first">商品价格</div>
+                    <el-form-item label="商品规格：" prop="is_stock">
+                        <div class="display-flex">
+                            <el-radio-group v-model="goodsDetail.is_stock">
+                                <el-radio :label="0" v-if="goodsDetail.is_stock==0">单规格</el-radio>
+                                <el-radio :label="1" v-if="goodsDetail.is_stock==1">多规格</el-radio>
+                            </el-radio-group>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="货品编号：" prop="erp_goods_no">
+                        <div class="display-flex">
+                            <el-input type="text" v-model="goodsDetail.erp_goods_no" style="width:300px" size="small">
+                            </el-input>
+                            <div class="form-tip-message">旺店通货品编号</div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="售卖价格：" prop="money" v-if="goodsDetail.is_stock==1">
+                        <div class="display-flex">
+                            <el-input type="text" v-model="goodsDetail.money" style="width:300px" size="small">
+                            </el-input>
+                            <div class="form-tip-message">多规格仅做展示</div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="售卖价格：" prop="money" v-if="goodsDetail.is_stock==0">
+                        <div class="display-flex">
+                            <el-input type="number" v-model="goodsDetail.money" style="width:300px" size="small">
+                            </el-input>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="运费模板：" prop="freight_id">
+                        <el-select v-model="goodsDetail.freight_id" placeholder="请选择">
+                            <el-option
+                                    v-for="item in freight_list"
+                                    :key="item.id"
+                                    :label="item.name"
+                                    :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </div>
+
+                <div>
+                    <div class="goods-part-title">商品规格</div>
+                    <div v-if="goodsDetail.is_stock==0">
+                        <el-form-item label="商品重量：">
+                            <div class="display-flex">
+                                <el-input type="input" v-model="goodsDetail.weight" style="width:300px"
+                                          size="small">
+                                </el-input>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="商品编号：">
+                            <div class="display-flex">
+                                <el-input type="input" v-model="goodsDetail.sn" style="width:300px" size="small">
+                                </el-input>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="商品库存：" prop="stock">
+                            <div class="display-flex">
+                                <el-input v-positive-integer type="number" min="0" v-model="goodsDetail.stock"
+                                          style="width:300px" size="small">
+                                </el-input>
+                            </div>
+                        </el-form-item>
+                    </div>
+                    <div v-if="goodsDetail.is_stock==1">
+                        <div class="add-sku-box">
+                            <div class="" v-for="(s, k) in skuList">
+                                <div class="display-flex-b sku-item">
+                                    <div class="display-flex">
+                                        <div>规格名称：</div>
+                                        <div style="width: 120px;">
+                                            <el-input type="input" v-model="skuList[k]['name']"
+                                                      placeholder="请输入名称" size="small">
+                                            </el-input>
+                                        </div>
+                                    </div>
+                                    <div class="delete-main-sku" @click="deleteMainSku(k)">
+                                        <img class="label-auto" src="/assets/img/yp/close.png">
+                                    </div>
+                                </div>
+                                <div class="display-flex sku-item sku-item-level">
+                                    <div style="width: 60px;">规格值：</div>
+                                    <div class="display-flex sku-item sku-item-level2">
+                                        <div class="sku-children" v-for="(sc, c) in s.children">
+                                            <el-input type="input" v-model="skuList[k]['children'][c]['name']"
+                                                      size="small" placeholder="请输入规格值" >
+                                            </el-input>
+                                            <div class="display-flex sku-children-del"
+                                                 @click="deleteChildrenSku(k,c)">
+                                                <img class="label-auto"
+                                                     src="/assets/img/yp/close.png">
+                                            </div>
+                                        </div>
+                                        <span class="add-child-sku" @click="addChildrenSku(k)">添加</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="display-flex sku-item">
+                                <div class="btn-common add-level1-sku" @click="addMainSku">
+                                    <i class="el-icon-plus"></i>
+                                    <span>添加规格</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-box" v-show="skuPrice.length && skuList.length">
+                            <div class="table-sku">
+                                <div class="table-sku-row display-flex">
+                                    <template v-for="(item, i) in skuList" :key="i">
+                                        <div class="tale-sku-item display-flex" v-if="item.children.length">
+                                            <span class="th-center">{{item.name}}</span>
+                                        </div>
+                                    </template>
+                                    <div class="sku-image display-flex">图片</div>
+                                    <div class="sku-price display-flex">
+                                        <span>价格(元)</span>
+                                        <el-popover placement="top" width="160" v-model="allEditPopover.money">
+                                            <el-input v-model="allEditDatas" placeholder="请输入内容" size="small">
+                                            </el-input>
+                                            <div class="popover-button-container">
+                                                <el-button size="mini" type="text"
+                                                           @click="allEditData('money','cancel')">取消</el-button>
+                                                <el-button type="primary" size="mini"
+                                                           @click="allEditData('money','define')">确定</el-button>
+                                            </div>
+                                            <div slot="reference">
+                                                <img class="all-edit-img"
+                                                     src="/assets/img/yp/batch.png">
+                                            </div>
+                                        </el-popover>
+                                    </div>
+                                    <div class="sku-stock display-flex">
+                                        <span>库存(个)</span>
+                                        <el-popover placement="top" width="160" v-model="allEditPopover.stock">
+                                            <el-input v-model="allEditDatas" placeholder="请输入内容" size="small">
+                                            </el-input>
+                                            <div class="popover-button-container">
+                                                <el-button size="mini" type="text"
+                                                           @click="allEditData('stock','cancel')">取消</el-button>
+                                                <el-button type="primary" size="mini"
+                                                           @click="allEditData('stock','define')">确定</el-button>
+                                            </div>
+                                            <div slot="reference">
+                                                <img class="all-edit-img"
+                                                     src="/assets/img/yp/batch.png">
+                                            </div>
+                                        </el-popover>
+                                    </div>
+                                    <div class="sku-weight display-flex">
+                                        <span>重量</span>
+                                        <el-popover placement="top" width="160" v-model="allEditPopover.weight">
+                                            <el-input v-model="allEditDatas" placeholder="请输入内容" size="small">
+                                            </el-input>
+                                            <div class="popover-button-container">
+                                                <el-button size="mini" type="text"
+                                                           @click="allEditData('weight','cancel')">取消</el-button>
+                                                <el-button type="primary" size="mini"
+                                                           @click="allEditData('weight','define')">确定</el-button>
+                                            </div>
+                                            <div slot="reference">
+                                                <img class="all-edit-img"
+                                                     src="/assets/img/yp/batch.png">
+                                            </div>
+                                        </el-popover>
+                                    </div>
+                                    <div class="sku-sn display-flex">
+                                        <span>编码</span>
+                                        <el-popover placement="top" width="160" v-model="allEditPopover.sn">
+                                            <el-input v-model="allEditDatas" placeholder="请输入内容" size="small">
+                                            </el-input>
+                                            <div class="popover-button-container">
+                                                <el-button size="mini" type="text"
+                                                           @click="allEditData('sn','cancel')">
+                                                    取消</el-button>
+                                                <el-button type="primary" size="mini"
+                                                           @click="allEditData('sn','define')">确定</el-button>
+                                            </div>
+                                            <div slot="reference">
+                                                <img class="all-edit-img"
+                                                     src="/assets/img/yp/batch.png">
+                                            </div>
+                                        </el-popover>
+                                    </div>
+
+                                    <div class="sku-sn display-flex">
+                                        <span>商家编码</span>
+                                        <el-popover placement="top" width="160" v-model="allEditPopover.erp_spec_no">
+                                            <el-input v-model="allEditDatas" placeholder="请输入内容" size="small">
+                                            </el-input>
+                                        </el-popover>
+                                    </div>
+
+<!--                                    <div class="sku-operation display-flex">当前状态</div>-->
+                                </div>
+                                <div class="table-sku-row display-flex" v-for="(item, i) in skuPrice" :key="i">
+                                    <div class="tale-sku-item display-flex" v-for="(v, j) in item.goods_sku_text"
+                                         :key="j">
+                                        <span class="th-center">{{v}}</span>
+                                    </div>
+                                    <div class="sku-image display-flex">
+                                        <div class="display-flex table-upload-img">
+                                            <div class="sku-img" v-if="item.image">
+                                                <img :src="Fast.api.cdnurl(item.image)" class="label-auto">
+                                                <i class="el-icon-close" @click="delImg('sku',i)"></i>
+                                            </div>
+                                            <div v-else @click="addImg('sku',i,false)">
+                                                <i class="el-icon-plus" style="font-size:18px;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="sku-price display-flex">
+                                        <el-input type="input" v-model="item.money" size="small"></el-input>
+                                    </div>
+                                    <div class="sku-stock display-flex">
+                                        <el-input type="input" v-model="item.stock" size="small"></el-input>
+                                    </div>
+                                    <div class="sku-weight display-flex">
+                                        <el-input type="input" v-model="item.weight" size="small"></el-input>
+                                    </div>
+                                    <div class="sku-sn display-flex">
+                                        <el-input type="input" v-model="item.sn" size="small"></el-input>
+                                    </div>
+                                    <div class="sku-sn display-flex">
+                                        <el-input type="input" v-model="item.erp_spec_no" size="small"></el-input>
+                                    </div>
+<!--                                    <div class="sku-operation display-flex">-->
+<!--                                            <span class="sku-status th-center" @click="editStatus(i)">-->
+<!--                                                {{item.status=='up'?'上架':'下架'}}-->
+<!--                                            </span>-->
+<!--                                    </div>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+                    <div class="display-flex editor-container">
+                        <label class="control-label">{:__('Content')}:</label>
+                        <div class="flex-1">
+                            <textarea id="c-content" class="form-control editor" rows="5" name="row[content]"
+                                      cols="50"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </el-form>
+        </div>
+    </div>
+    <div class="open-page-button-container">
+        <div class="dialog-button dialog-button-define" @click="submitForm('goodsDetail')">确定</div>
+    </div>
+</div>

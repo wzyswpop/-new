@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'Order_no'        => '订单号',
+    'User_id'         => '用户',
+    'Payment'         => '支付类型',
+    'Payment balance' => '余额',
+    'Payment wechat'  => '微信',
+    'Payment none'    => '无',
+    'Num'             => '数量',
+    'Freight'         => '运费',
+    'Status'          => '订单状态',
+    'Status 0'        => '已取消',
+    'Status 1'        => '待支付',
+    'Status 2'        => '待发货',
+    'Status 3'        => '已发货',
+    'Name'            => '收货人',
+    'Phone'           => '手机号',
+    'Address'         => '详细地址',
+    'Express_name'    => '快递名称',
+    'Express_no'      => '快递单号',
+    'Createtime'      => '创建时间',
+    'Paytime'         => '支付时间',
+    'Delivertime'     => '发货时间',
+    'Goods_num'       => '订单商品总数量',
+    'Goods_name'      => '商品名称',
+    'Goods_image'     => '商品封面',
+    'User.nickname'   => '昵称',
+    'Province_name' => '省',
+    'City_name' => '市',
+    'County_name' => '区/县'
+];

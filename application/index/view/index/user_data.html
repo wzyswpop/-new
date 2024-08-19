@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="__CDN__/assets/libs/element/libs/element/element.css">
+    <link rel="stylesheet" href="__CDN__/assets/libs/element/libs/common.css">
+    <title>用户浏览数据</title>
+</head>
+<body>
+<div id="app">
+    <el-table
+            :data="list"
+            border
+            style="width: 100%">
+        <el-table-column
+                prop="nickname"
+                label="用户昵称"
+                >
+        </el-table-column>
+        <el-table-column
+                label="用户头像"
+                >
+            <template slot-scope="scope">
+                <el-avatar :size="50" :src="scope.row.avatar"></el-avatar>
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="goods_title"
+                label="商品名称"
+                >
+        </el-table-column>
+        <el-table-column
+                label="商品封面"
+                >
+            <template slot-scope="scope">
+                <el-avatar :size="50" :src="scope.row.goods_image" shape="square"></el-avatar>
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="createtime"
+                label="浏览时间">
+        </el-table-column>
+    </el-table>
+    <div style="text-align: center;margin-top: 20px">
+        <el-pagination
+                background
+                layout="prev, pager, next"
+                page-size="15"
+                @current-change="getList"
+                :total="total">
+        </el-pagination>
+    </div>
+
+</div>
+<script src="__CDN__/assets/libs/jquery/dist/jquery.js"></script>
+<script src="__CDN__/assets/libs/element/libs/vue.js"></script>
+<script src="__CDN__/assets/libs/element/libs/element/element.js"></script>
+<script src="__CDN__/assets/libs/element/libs/moment.js"></script>
+<script>
+    let app = new Vue({
+        el:'#app',
+        data(){
+            return {
+                list:[],
+                total:1
+            }
+        },
+        mounted(){
+            this.getList(1);
+        },
+        methods:{
+            getList(page){
+                var that = this;
+                that.page = page;
+                $.ajax({
+                    type:'get',
+                    url:'/index/index/getPage?page='+that.page,
+                    success:function(res){
+                        that.total = res.data.total;
+                        that.list = res.data.data;
+                    }
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>

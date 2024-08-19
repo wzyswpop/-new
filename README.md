@@ -1,38 +1,97 @@
-### 3 分钟了解如何进入开发
-
-欢迎使用云效代码管理 Codeup，通过阅读以下内容，你可以快速熟悉 Codeup ，并立即开始今天的工作。
-
-### 提交**文件**
-
-Codeup 支持两种方式进行代码提交：网页端提交，以及本地 Git 客户端提交。
-
-* 如需体验本地命令行操作，请先安装 Git 工具，安装方法参见[安装Git](https://help.aliyun.com/document_detail/153800.html)。
-
-* 如需体验 SSH 方式克隆和提交代码，请先在平台账号内配置 SSH 公钥，配置方法参见[配置 SSH 密钥](https://help.aliyun.com/document_detail/153709.html)。
-
-* 如需体验 HTTP 方式克隆和提交代码，请先在平台账号内配置克隆账密，配置方法参见[配置 HTTPS 克隆账号密码](https://help.aliyun.com/document_detail/153710.html)。
-
-现在，你可以在 Codeup 中提交代码文件了，跟着文档「[__提交第一行代码__](https://help.aliyun.com/document_detail/153707.html?spm=a2c4g.153710.0.0.3c213774PFSMIV#6a5dbb1063ai5)」一起操作试试看吧。
-
-<img src="https://img.alicdn.com/imgextra/i3/O1CN013zHrNR1oXgGu8ccvY_!!6000000005235-0-tps-2866-1268.jpg" width="100%" />
+FastAdmin是一款基于ThinkPHP+Bootstrap的极速后台开发框架。
 
 
-### 进行代码检测
+## 主要特性
 
-开发过程中，为了更好的维护你的代码质量，你可以开启 Codeup 内置开箱即用的「[代码检测服务](https://help.aliyun.com/document_detail/434321.html)」，开启后提交或合并请求的变更将自动触发检测，识别代码编写规范和安全漏洞问题，并及时提供结果报表和修复建议。
+* 基于`Auth`验证的权限管理系统
+    * 支持无限级父子级权限继承，父级的管理员可任意增删改子级管理员及权限设置
+    * 支持单管理员多角色
+    * 支持管理子级数据或个人数据
+* 强大的一键生成功能
+    * 一键生成CRUD,包括控制器、模型、视图、JS、语言包、菜单、回收站等
+    * 一键压缩打包JS和CSS文件，一键CDN静态资源部署
+    * 一键生成控制器菜单和规则
+    * 一键生成API接口文档
+* 完善的前端功能组件开发
+    * 基于`AdminLTE`二次开发
+    * 基于`Bootstrap`开发，自适应手机、平板、PC
+    * 基于`RequireJS`进行JS模块管理，按需加载
+    * 基于`Less`进行样式开发
+* 强大的插件扩展功能，在线安装卸载升级插件
+* 通用的会员模块和API模块
+* 共用同一账号体系的Web端会员中心权限验证和API接口会员权限验证
+* 二级域名部署支持，同时域名支持绑定到应用插件
+* 多语言支持，服务端及客户端支持
+* 支持大文件分片上传、剪切板粘贴上传、拖拽上传，进度条显示，图片上传前压缩
+* 支持表格固定列、固定表头、跨页选择、Excel导出、模板渲染等功能
+* 强大的第三方应用模块支持([CMS](https://www.fastadmin.net/store/cms.html)、[博客](https://www.fastadmin.net/store/blog.html)、[知识付费问答](https://www.fastadmin.net/store/ask.html)、[在线投票系统](https://www.fastadmin.net/store/vote.html)、[B2C商城](https://www.fastadmin.net/store/shopro.html)、[B2B2C商城](https://www.fastadmin.net/store/wanlshop.html))
+* 支持CMS、博客、知识付费问答无缝整合[Xunsearch全文搜索](https://www.fastadmin.net/store/xunsearch.html)
+* 第三方小程序支持([CMS小程序](https://www.fastadmin.net/store/cms.html)、[预订小程序](https://www.fastadmin.net/store/ball.html)、[问答小程序](https://www.fastadmin.net/store/ask.html)、[点餐小程序](https://www.fastadmin.net/store/unidrink.html)、[B2C小程序](https://www.fastadmin.net/store/shopro.html)、[B2B2C小程序](https://www.fastadmin.net/store/wanlshop.html)、[博客小程序](https://www.fastadmin.net/store/blog.html))
+* 整合第三方短信接口(阿里云、腾讯云短信)
+* 无缝整合第三方云存储(七牛云、阿里云OSS、又拍云)功能，支持云储存分片上传
+* 第三方富文本编辑器支持(Summernote、Kindeditor、百度编辑器)
+* 第三方登录(QQ、微信、微博)整合
+* 第三方支付(微信、支付宝)无缝整合，微信支持PC端扫码支付
+* 丰富的插件应用市场
 
-<img src="https://img.alicdn.com/imgextra/i2/O1CN01BRzI1I1IO0CR2i4Aw_!!6000000000882-0-tps-2862-1362.jpg" width="100%" />
+## 安装使用
 
-### 开展代码评审
+https://doc.fastadmin.net
 
-功能开发完毕后，通常你需要发起「[代码评审并执行合并](https://help.aliyun.com/document_detail/153872.html)」，Codeup 支持多人协作的代码评审服务，你可以通过「[保护分支设置合并规则](https://help.aliyun.com/document_detail/153873.html?spm=a2c4g.203108.0.0.430765d1l9tTRR#p-4on-aep-l5q)」策略及「[__合并请求设置__](https://help.aliyun.com/document_detail/153874.html?spm=a2c4g.153871.0.0.3d38686cJpcdJI)」对合并过程进行流程化管控，同时提供在线代码评审及冲突解决能力，让评审过程更加流畅。
+## 在线演示
 
-<img src="https://img.alicdn.com/imgextra/i1/O1CN01MaBDFH1WWcGnQqMHy_!!6000000002796-0-tps-2592-1336.jpg" width="100%" />
+https://demo.fastadmin.net
 
-### 成员协作
+用户名：admin
 
-是时候邀请成员一起编写卓越的代码工程了，请点击左下角「成员」邀请你的小伙伴开始协作吧！
+密　码：123456
 
-### 更多
+提　示：演示站数据无法进行修改，请下载源码安装体验全部功能
 
-Git 使用教学、高级功能指引等更多说明，参见[Codeup帮助文档](https://help.aliyun.com/document_detail/153402.html)。
+## 界面截图
+![控制台](https://images.gitee.com/uploads/images/2020/0929/202947_8db2d281_10933.gif "控制台")
+
+## 问题反馈
+
+在使用中有任何问题，请使用以下联系方式联系我们
+
+交流社区: https://ask.fastadmin.net
+
+QQ 1 群（满）、QQ 2 群（满）、QQ 3 群（满）、QQ 4 群（满）、QQ 5 群（满）、QQ 6 群（满）、[QQ 7 群](https://www.fastadmin.net/goto/qun)。
+
+Github: https://github.com/karsonzhang/fastadmin
+
+Gitee: https://gitee.com/karson/fastadmin
+
+## 特别鸣谢
+
+感谢以下的项目,排名不分先后
+
+ThinkPHP：http://www.thinkphp.cn
+
+AdminLTE：https://adminlte.io
+
+Bootstrap：http://getbootstrap.com
+
+jQuery：http://jquery.com
+
+Bootstrap-table：https://github.com/wenzhixin/bootstrap-table
+
+Nice-validator: https://validator.niceue.com
+
+SelectPage: https://github.com/TerryZ/SelectPage
+
+Layer: https://layuion.com/layer/
+
+DropzoneJS: https://www.dropzonejs.com
+
+
+## 版权信息
+
+FastAdmin遵循Apache2开源协议发布，并提供免费使用。
+
+本项目包含的第三方源码和二进制文件之版权信息另行标注。
+
+版权所有Copyright © 2017-2022 by FastAdmin (https://www.fastadmin.net)
+
+All rights reserved。

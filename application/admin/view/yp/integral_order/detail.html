@@ -1,0 +1,334 @@
+<style type="text/css">
+    .content {
+        padding: 25px 20px;
+    }
+
+    /* 订单详情 */
+    .order-detail .order-block {
+        height: 31px;
+        line-height: 31px;
+        background: #e8edf0;
+        border-radius: 13px;
+        font-size: 14px;
+        text-align: center;
+        position: relative;
+        margin-bottom: 50px;
+    }
+
+    .order-detail .order-block:before,
+    .order-detail .order-block:after {
+        content: "";
+        position: absolute;
+        z-index: 2;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 13px;
+        background: #18bc9c;
+    }
+
+    .order-detail .order-block:after {
+        background: #4dc7af;
+        z-index: 1;
+    }
+
+    .order-detail .order-block.progress-0:before {
+        width: 0;
+    }
+
+    .order-detail .order-block.progress-0:after {
+        width: 50%;
+    }
+    .order-detail .order-block.progress-1:before {
+        width: 0;
+    }
+
+    .order-detail .order-block.progress-1:after {
+        width: 50%;
+    }
+
+    .order-detail .order-block.progress-2:before {
+        width: 75%;
+    }
+
+    .order-detail .order-block.progress-2:after {
+        width: 75%;
+    }
+
+    .order-detail .order-block.progress-3:before {
+        width: 100%;
+    }
+
+    .order-detail .order-block.progress-3:after {
+        width: 100%;
+    }
+
+
+    /*.order-detail .order-block.progress-5:before {*/
+    /*    width: 100%;*/
+    /*}*/
+
+    /*.order-detail .order-block.progress-5:after {*/
+    /*    width: 100%;*/
+    /*}*/
+
+    .order-detail .order-block.progress-4 li:nth-child(4) {
+        color: #fff;
+    }
+
+    .order-detail .order-block li {
+        width: 25%;
+        float: left;
+        list-style-type: none;
+        border-radius: 13px;
+        position: relative;
+        z-index: 3;
+    }
+
+    .order-detail .order-block .tip {
+        font-size: 12px;
+        padding-top: 10px;
+        color: #717171;
+    }
+
+    .order-detail .order-block.progress-1 li:nth-child(1),
+    .order-detail .order-block.progress-1 li:nth-child(2),
+    .order-detail .order-block.progress-2 li:nth-child(1),
+    .order-detail .order-block.progress-3 li:nth-child(1),
+    .order-detail .order-block.progress-4 li:nth-child(1),
+    .order-detail .order-block.progress-5 li:nth-child(1) {
+        color: #fff;
+    }
+
+    .order-detail .order-block.progress-2 li:nth-child(2),
+    .order-detail .order-block.progress-2 li:nth-child(3),
+    .order-detail .order-block.progress-3 li:nth-child(2),
+    .order-detail .order-block.progress-4 li:nth-child(2),
+    .order-detail .order-block.progress-5 li:nth-child(2) {
+        color: #fff;
+    }
+
+    .order-detail .order-block.progress-3 li:nth-child(3),
+    .order-detail .order-block.progress-3 li:nth-child(4),
+    .order-detail .order-block.progress-4 li:nth-child(3),
+    .order-detail .order-block.progress-5 li:nth-child(3) {
+        color: #fff;
+    }
+
+    .order-detail .order-block.progress-4 li:nth-child(4),
+    .order-detail .order-block.progress-5 li:nth-child(4) {
+        color: #fff;
+    }
+
+    .order-detail .td__order-price {
+        width: 200px;
+        display: inline-block;
+    }
+
+    .order-head {
+        width: 100%;
+        padding: 12px 20px;
+        margin-top: 60px;
+        /* margin-bottom: 20px; */
+        /* border-bottom: 1px solid #eef1f5; */
+    }
+
+    .order-head:not(:first-child) {
+        margin-top: 0;
+    }
+
+    .order-head .title {
+        position: relative;
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .order-head .title::before {
+        content: '';
+        position: absolute;
+        width: 4px;
+        height: 14px;
+        background: #18bc9c;
+        top: 4px;
+        left: -12px;
+    }
+
+    .table-responsive .table>tbody>tr>td {
+        text-align: center;
+        vertical-align: middle;
+        color: #676767;
+    }
+
+    .ordertext {
+        margin: 0 30px;
+    }
+
+    .table-bordered {
+        border: 1px solid #e8edf0;
+    }
+
+    .table-bordered>thead>tr>th,
+    .table-bordered>tbody>tr>th,
+    .table-bordered>tfoot>tr>th,
+    .table-bordered>thead>tr>td,
+    .table-bordered>tbody>tr>td,
+    .table-bordered>tfoot>tr>td {
+        border: 1px solid #e8edf0;
+    }
+
+    .table thead tr {
+        background: #f8f9fb;
+    }
+
+    .order_price span {
+        width: 70px;
+        display: inline-block;
+        text-align: right;
+    }
+</style>
+<div class="order-detail">
+    <ul class="order-block progress-{$row.status}">
+        <li>
+            <span>下单时间</span>
+            <div class="tip">{$row.createtime?datetime($row.createtime):''}</div>
+        </li>
+        <li>
+            <span>付款</span>
+            <div class="tip">{$row.paytime?datetime($row.paytime):''}</div>
+        </li>
+        <li>
+            <span>发货</span>
+            <div class="tip">{$row.delivertime?datetime($row.delivertime):''}</div>
+        </li>
+        <li>
+            <span>收货</span>
+            <div class="tip">{$row.confirmtime?datetime($row.confirmtime):''}</div>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">商品信息</div>
+            <div class="panel-body">
+                <p><span>订单号：</span><small>{$row.order_no}</small></p>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th class="text-center">
+                            <div class="th-inner">主图</div>
+                        </th>
+                        <th class="text-center">
+                            <div class="th-inner">商品名称</div>
+                        </th>
+                        <th class="text-center">
+                            <div class="th-inner">数量</div>
+                        </th>
+                        <th class="text-center">
+                            <div class="th-inner">单价</div>
+                        </th>
+                        <th class="text-center">
+                            <div class="th-inner">总价</div>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="text-center">
+                        <td><a href="javascript:"><img class="img-sm img-center" src="{$row.goods_image|cdnurl|htmlentities}"></a></td>
+                        <td><strong>{$row.goods_title}</strong></td>
+                        <td>{$row.num}</td>
+                        <td>{$row.money}</td>
+                        <td>{$row.score}</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th colspan="10" style="text-align: right;">
+                            <span class="ordertext">订单积分：<samp class="text-red">￥{$row.score}</samp></span>
+                        </th>
+                    </tr>
+                    </tfoot>
+                </table>
+                <div style="color: #333;">
+
+                    <p style="margin-bottom: 15px;">交易状态：
+                        {switch name="row.status"}
+                        {case value="0"}<span class="label label-info">{$row.status_text|htmlentities}</span>{/case}
+                        {case value="1"}<span class="label label-warning">{$row.status_text|htmlentities}</span>{/case}
+                        {case value="2"}<span class="label label-primary">{$row.status_text|htmlentities}</span>{/case}
+                        {case value="3"}<span class="label label-success">{$row.status_text|htmlentities}</span>{/case}
+                        {/switch}
+                    </p>
+                    {notempty name="row.remarks"}
+                    <p>买家留言：{$row.remarks}</small></p>
+                    {/notempty}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {if condition="$row.status egt 0"}
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">收货地址</div>
+            <div class="panel-body">
+                <table class="table table-striped">
+                    <tbody>
+                    <tr>
+                        <td>收货人</td>
+                        <td>{$row.name}</td>
+                    </tr>
+                    <tr>
+                        <td>联系电话</td>
+                        <td>{$row.phone}</td>
+                    </tr>
+                    <tr>
+                        <td>收货地址</td>
+                        <td>{$row.province_name}{$row.city_name}{$row.county_name}{$row.address}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {/if}
+    {if condition="$row.status egt 3"}
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">发货信息</div>
+            <div class="panel-body">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th class="text-center">
+                            <div class="th-inner">快递公司</div>
+                        </th>
+                        <th class="text-center">
+                            <div class="th-inner">快递号</div>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="text-center">
+                        <td>{$row.express_name}</td>
+                        <td>{$row.express_no}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {/if}
+</div>
+
+
+
+
+
+<div class="hide layer-footer">
+    <label class="control-label col-xs-12 col-sm-2"></label>
+    <div class="col-xs-12 col-sm-8">
+        <button type="reset" class="btn btn-primary btn-embossed btn-close" onclick="Layer.closeAll();">{:__('Close')}</button>
+    </div>
+</div>
