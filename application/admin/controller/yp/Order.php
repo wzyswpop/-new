@@ -61,6 +61,22 @@ class Order extends Backend
                     ->paginate($limit);
 
             foreach ($list as $row) {
+                switch ($row['payment']){
+                    case 'wechat':
+                        $row['payment_name'] = '微信';
+                        break;
+                    case 'balance':
+                        $row['payment_name'] = '余额';
+                        break;
+                }
+                switch ($row['order_type']){
+                    case '0':
+                        $row['order_type_name'] = '普通订单';
+                        break;
+                    case '1':
+                        $row['order_type_name'] = '定制订单';
+                        break;
+                }
                 
                 $row->getRelation('user')->visible(['nickname']);
             }
@@ -380,11 +396,15 @@ class Order extends Backend
             ->select();
         $expCellName = [
             'order_no' => '订单号',
+            'order_type' => '订单类型',
             'payment' => '支付类型',
             'order_money' => '订单金额',
-            'freight' => '运费',
+            'cash_money' => '扣减余额',
+            'discount_money' => '积分抵扣金额',
             'goods_num' => '商品总数量',
             'goods_title' => '购买商品',
+            'weight' => '商品重量',
+            'baking' => '烘培程度',
             'stock_title' => '商品规格',
             'num' => '数量',
             'money' => '金额',
@@ -404,9 +424,11 @@ class Order extends Backend
         foreach ($order as $v) {
             $newList[] = [
                 'order_no' => $v['order_no'],
+                'order_type' => $v['order_type'] == 0 ? '普通订单' : '定制订单',
                 'payment' => $v['payment'] == 'wechat' ? '微信' : '余额',
                 'order_money' => $v['order_money'],
-                'freight' => $v['freight'],
+                'cash_money' => $v['cash_money'],
+                'discount_money' => $v['discount_money'],
                 'goods_num' => $v['goods_num'],
                 'item' => $v['item'],
                 'status' => $v['status_text'],
@@ -421,7 +443,7 @@ class Order extends Backend
                 'confirmtime' => $v['confirmtime'] ? date('Y-m-d H:i:s',$v['confirmtime']) : ''
             ];
         }
-        $no_merge_field = ['goods_title','stock_title','num','money','unit_price'];  //不合并的列
+        $no_merge_field = ['goods_title','weight','baking','stock_title','num','money','unit_price'];  //不合并的列
         $this->exportExcel('订单信息', $expCellName, $newList,$no_merge_field);
     }
 

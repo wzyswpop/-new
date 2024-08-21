@@ -33,6 +33,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'order_no', title: __('Order_no')},
                         {field: 'type', title: __('Type'), searchList: {"1":__('Type 1'),"2":__('Type 2')}, formatter: Table.api.formatter.normal},
                         {field: 'money', title: __('Money'), operate:false},
+                        {field: 'orders.discount_integral', title: __('抵扣积分'), operate:false},
                         {field: 'explain', title: __('Explain'), operate: 'LIKE'},
                         {field: 'images', title: __('Images'), operate: false, events: Table.api.events.image, formatter: Table.api.formatter.images},
                         {field: 'status', title: __('Status'), searchList: {"0":__('Status 0'),"1":__('Status 1'),"2":__('Status 2')}, formatter: Table.api.formatter.status},

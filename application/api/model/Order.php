@@ -297,6 +297,9 @@ class Order extends Base
                 if(isset($v['baking']) && !empty($v['baking'])){
                     $item['baking'] = $v['baking'];
                 }
+                if($info['order_type'] == 1){
+                    $item['unit_price'] = $v['goods_info']['customized_price'];
+                }
                 SkuPrice::where(['id' => $v['stock_id']])->setDec('stock',$v['num']);
                 $order_item[] = $item;
             }

@@ -31,7 +31,8 @@
         "ext-pdo": "*",
         "ext-bcmath": "*",
         "txthinking/mailer": "^2.0",
-        "cache/filesystem-adapter": "^1.2"
+        "cache/filesystem-adapter": "^1.2",
+        "zoujingli/wechat-developer": "^1.2"
     },
     "config": {
         "preferred-install": "dist",

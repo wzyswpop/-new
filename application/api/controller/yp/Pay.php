@@ -206,18 +206,18 @@ class Pay extends Base{
             try {
                 $order_info->paytime = time();
                 $order_info->payment = 'wechat';
-//                $score = floor($order_info['order_money']);
-//                if($score >= 1){
-//                    $score_log = [
-//                        'user_id' => $order_info['user_id'],
-//                        'money' => $score,
-//                        'type' => 'add',
-//                        'memo' => '支付订单增加',
-//                        'order_no' => $order_info['order_no'],
-//                        'change_type' => 'pay'
-//                    ];
-//                    User::changeIntegral($score_log);
-//                }
+                $score = $order_info['cash_money'];
+                if($score >= 0){
+                    $score_log = [
+                        'user_id' => $order_info['user_id'],
+                        'money' => $score,
+                        'type' => 'sub',
+                        'memo' => '支付订单扣减',
+                        'order_no' => $order_info['order_no'],
+                        'change_type' => 'pay'
+                    ];
+                    User::changeMoney($score_log);
+                }
                 $order_info->status = '2';
                 $order_info->paytime = time();
                 $order_info->save();
@@ -250,10 +250,24 @@ class Pay extends Base{
         if(!$order_info){
             $this->error('订单不存在');
         }
+        if($order_info['order_money'] > $this->auth->money){
+            $cash_money = $order_info['order_money'] - $this->auth->money;
+            $order_info->cash_money = $cash_money;
+            $order_info->payment = 'wechat';
+            $payment = 'wechat';
+        }else{
+            $payment = 'balance';
+            $order_info->payment = 'balance';
+            $order_info->cash_money = 0;
+        }
+        $order_info->save();
         if($payment == 'balance'){
+            $order_info = Order::where(['user_id' => $this->auth->id,'status' => '1','id' => $id])->find();
             $this->balance($order_info);
         }else{
-            $order_money = $order_info['order_money'] - $order_info['cash_money'];
+            //判断用户余额
+            $order_info = Order::where(['user_id' => $this->auth->id,'status' => '1','id' => $id])->find();
+            $order_money = $order_info['order_money'] - $cash_money;
         }
         if(!$this->auth->open_id){
             $this->error('缺少 openid');

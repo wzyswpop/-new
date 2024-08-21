@@ -105,11 +105,12 @@
             <thead>
             <tr>
                 <th class="text-center"><div class="th-inner">商品</div></th>
-                <th class="fix-108"><div class="th-inner">单价</div></th>
+                <th class="fix-108"><div class="th-inner">商品总价</div></th>
+                <th class="fix-108"><div class="th-inner">重量</div></th>
+                <th class="fix-108"><div class="th-inner">烘焙程度</div></th>
                 <th class="fix-108"><div class="th-inner">数量</div></th>
                 <th class="fix-108"><div class="th-inner">买家</div></th>
                 <th class="fix-108"><div class="th-inner">优惠金额</div></th>
-                <th class="fix-108"><div class="th-inner">等级折扣金额</div></th>
                 <th class="fix-108"><div class="th-inner">订单金额(优惠后)</div></th>
                 <th class="fix-108"><div class="th-inner">状态</div></th>
             </tr>
@@ -125,6 +126,11 @@
                     <div class="th-inner">
                         <input name="checkbox" data-id="<%=item.id%>" id="order_<%=item.id%>" type="checkbox" />
                         <label for="order_<%=item.id%>">订单号：<%=item.order_no%></label>
+                        <label style="margin-left:60px;"for="order_<%=item.id%>">订单类型：<%=item.order_type_name%></label>
+                        <label style="margin-left:60px;"for="order_<%=item.id%>">支付方式：<%=item.payment_name%></label>
+                        <label style="margin-left:60px;"for="order_<%=item.id%>">订单金额：<%=item.order_money%></label>
+                        <label style="margin-left:60px;"for="order_<%=item.id%>">支付余额：<%=item.cash_money%></label>
+                        <label style="margin-left:60px;"for="order_<%=item.id%>">抵扣积分：<%=item.discount_integral%></label>
                         <label style="margin-left:60px;" for="order_<%=item.id%>">创建时间：<%=Moment(item.createtime*1000).format("YYYY-MM-DD HH:mm:ss")%></label>
                     </div>
                 </th>
@@ -147,7 +153,13 @@
                     </div>
                 </td>
                 <td class="conceal fix-108">
-                    <p>￥<%=goods.unit_price%></p>
+                    <p>￥<%=goods.money%></p>
+                </td>
+                <td class="conceal fix-108">
+                    <p><%=goods.weight%>g</p>
+                </td>
+                <td class="conceal fix-108">
+                    <p><%=goods.baking%></p>
                 </td>
                 <td class="conceal fix-108"> <%=goods.num%> </td>
                 <% if(k == 0){ %>
@@ -160,11 +172,7 @@
                     <p><strong>￥<%= item.discount_money %></strong> </p>
                 </td>
                 <td class="fix-108">
-                    <p><strong>￥<%= item.level_discount_money %></strong> </p>
-                </td>
-                <td class="fix-108">
                     <p><strong>￥<%= item.order_money %></strong> </p>
-                    <p style="color:#6c6c6c;font-family:verdana;margin-bottom:3px;"> (含运费：￥<%= item.freight %>) </p>
                 </td>
                 <td class="fix-108 operation">
                     <% if(item.status == 0){ %>

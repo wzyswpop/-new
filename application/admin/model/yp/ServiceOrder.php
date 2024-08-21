@@ -75,4 +75,7 @@ class ServiceOrder extends Model
     {
         return $this->belongsTo('app\admin\model\User', 'user_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
+    public function orders(){
+        return $this->belongsTo(Order::class,'order_id','id');
+    }
 }

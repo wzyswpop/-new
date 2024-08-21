@@ -46,7 +46,7 @@ class ServiceOrder extends Backend
             [$where, $sort, $order, $offset, $limit] = $this->buildparams();
 
             $list = $this->model
-                    ->with(['user'])
+                    ->with(['user','orders'])
                     ->where($where)
                     ->order($sort, $order)
                     ->paginate($limit);
@@ -84,19 +84,50 @@ class ServiceOrder extends Backend
         if($type == 'yes'){
             Db::startTrans();
             try{
+                $orderInfo = \app\admin\model\Order::where(['id'=>$info['order_id']])->find();
                 $info->status = '1';
                 $info->handletime = time();
                 $info->return_money = 2;
                 $info->save();
-                $data = [
-                    'user_id' => $info['user_id'],
-                    'money' => $info['money'],
-                    'type' => 'add',
-                    'memo' => '退款',
-                    'order_no' => $info['order_no'],
-                    'change_type' => 'service_order'
-                ];
-                $res = User::changeMoney($data);
+                //判断支付方式
+                if($orderInfo['payment'] == 'balance'){
+                    $data = [
+                        'user_id' => $info['user_id'],
+                        'money' => $info['money'],
+                        'type' => 'add',
+                        'memo' => '退款',
+                        'order_no' => $info['order_no'],
+                        'change_type' => 'service_order'
+                    ];
+                    $res = User::changeMoney($data);
+                }else{
+                    //余额返还
+                    if($orderInfo['cash_money'] > 0  && $orderInfo['cash_money'] >= $info['money']){
+                        $data = [
+                            'user_id' => $info['user_id'],
+                            'money' => $info['money'],
+                            'type' => 'add',
+                            'memo' => '退款',
+                            'order_no' => $info['order_no'],
+                            'change_type' => 'service_order'
+                        ];
+                        $res = User::changeMoney($data);
+                    }elseif($orderInfo['cash_money'] > 0  && $orderInfo['cash_money'] < $info['money']){
+                        $data = [
+                            'user_id' => $info['user_id'],
+                            'money' => $orderInfo['cash_money'],
+                            'type' => 'add',
+                            'memo' => '退款',
+                            'order_no' => $info['order_no'],
+                            'change_type' => 'service_order'
+                        ];
+                        $res = User::changeMoney($data);
+                        //微信退款
+
+
+
+                    }
+                }
                 \app\admin\model\yp\Order::where(['id' => $info['order_id']])->update(['status' => '6']);
                 Db::commit();
             }catch (Exception $e){
