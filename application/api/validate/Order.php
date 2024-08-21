@@ -12,7 +12,6 @@ class Order extends Validate
      */
     protected $rule = [
         'goods_list' => 'require|array',
-        'coupon_id' => 'require',
         'address_id' => 'require',
         'id' => 'require',
         'status' => 'require|in:all,1,2,3,4',
@@ -25,7 +24,6 @@ class Order extends Validate
     protected $message = [
         'goods_list.require' => '未选择商品',
         'goods_list.array' => '未选择商品',
-        'coupon_id.require' => '参数错误',
         'address_id.requireIf' => '收货地址不能为空',
         'id.require' => '参数错误',
         'status.require' => '参数错误',
@@ -45,7 +43,7 @@ class Order extends Validate
     protected $scene = [
         'carconfirmorder' => ['cart_id'],
         'confirmorder' => ['goods_list'],
-        'createorder'  => ['goods_list','coupon_id','address_id','remarks'],
+        'createorder'  => ['goods_list','address_id','remarks'],
         'details' => ['id'],
         'orderlist' => ['status'],
         'cancelorder' => ['id'],

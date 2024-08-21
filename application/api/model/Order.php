@@ -72,6 +72,7 @@ class Order extends Base
         $goods_num = 0;
         $order_type = 0;
         $goods_ids = [];
+        $total_ratio = 0;
         foreach ($goods_list as &$v){
             $goods_ids[] = $v['goods_id'];
             $goods_info = Goods::where(['id' => $v['goods_id'],'status' => '1'])->field('id,name,image,category_id,is_stock,is_customized,customized_price')->find();
@@ -89,15 +90,33 @@ class Order extends Base
             }
             $goods_stock['goods_category'] = $goods_info['category'];
             $v['stock'] = $goods_stock;
-            if($v['is_customized'] == 1){
+            if($goods_info['is_customized'] == 1){
                 $order_type = 1;
-                $v['money'] = bcmul($goods_info['customized_price'],$data['weight']/1000);
+                if(count($goods_list) > 1){
+                    if($v['ratio'] <=0 ){
+                        json_error('商品比例错误');
+                    }
+                    if(count($goods_list) > 5 ||  count($goods_list) < 2){
+                        json_error('商品数量错误');
+                    }
+                    $total_ratio = $total_ratio + $v['ratio'];
+                    $v['money'] = bcmul($goods_info['customized_price'],$v['ratio']/100,2);
+                    $v['weight'] = bcmul(1000,bcdiv($v['ratio'],100,2),0);
+                }else{
+                    $v['money'] = bcmul($goods_info['customized_price'],$v['weight']/1000,2);
+                }
+
             }else{
                 $v['money'] = $goods_stock['money'] * $v['num'];
             }
             $goods_money += $v['money'];
             $goods_money = number_format($goods_money,2);
             $goods_num += $v['num'];
+        }
+        if($order_type == 1 && count($goods_list) > 1){
+            if($total_ratio != 100){
+                json_error('商品数量错误');
+            }
         }
         unset($v);
         $all_money += $goods_money;
@@ -108,10 +127,12 @@ class Order extends Base
             $intergal_cash = bcdiv($intergal,$cash_integral,2);
         }
         $discount_money = 0;
+        $use_integral = 0;
 
         if($data['use_integral'] == 1 && $intergal && $intergal > 0 && $cash_integral> 0){
             $discount_money = bcdiv($intergal,$cash_integral,2);
             $all_money = $all_money - $discount_money;
+            $use_integral = $intergal;
         }
         if($all_money <= 0){
             $all_money = 0;
@@ -120,7 +141,7 @@ class Order extends Base
         $all_money = number_format($all_money,2);
         $user_money = $user_info['money'];
 
-        return compact('order_type','user_money','all_money','discount_money','goods_list','goods_money','goods_num','return','intergal','intergal_cash','address_info');
+        return compact('order_type','user_money','all_money','discount_money','goods_list','goods_money','goods_num','return','intergal','intergal_cash','address_info','use_integral');
     }
 
     /**
@@ -217,19 +238,20 @@ class Order extends Base
                 'order_money' => $info['all_money'],
                 'goods_money' => $info['goods_money'],
                 'discount_money' => $info['discount_money'],
+                'discount_integral' => $info['use_integral'],
                 'createtime' => time(),
                 'remarks' => $data['remarks'],
                 'goods_num' => $info['goods_num']
             ];
             $order_data = array_merge($order_data,$address_info);
             //判断用户余额
-            $userInfo = User::where(['id'=>$user_id])->field('id')->find();
+            $userInfo = User::where(['id'=>$user_id])->find();
             if($data['use_integral'] == 1){
                 //扣除积分
                 $res = User::changeIntegral(
                     [
                         'user_id' => $userInfo['id'],
-                        'money' => $data['integral'],
+                        'money' => $userInfo['integral'],
                         'type' => 'sub',
                         'memo' => '订单抵扣',
                         'order_no' => $order_no,
@@ -242,10 +264,10 @@ class Order extends Base
                 }
             }
             if($userInfo['money'] >= $info['all_money']){
-                $order_data['payment'] = 'balance';
+                $payment = $order_data['payment'] = 'balance';
             }else{
                 $order_data['cash_money'] = $userInfo['money'];
-                $order_data['payment'] = 'wechat';
+                $payment =  $order_data['payment'] = 'wechat';
             }
 
             $order_id = $this->insertGetId($order_data);
@@ -267,7 +289,7 @@ class Order extends Base
                     'money' => $v['money'],
                     'json' => json_encode($v),
                     'goods_category' => $v['stock']['goods_category'],
-                    'unit_price' => $v['stock']['money'],
+                    'unit_price' => $v['stock']['money']
                 ];
                 if(isset($v['weight']) && $v['weight'] > 0){
                     $item['weight'] = $v['weight'];
@@ -287,7 +309,7 @@ class Order extends Base
             $this->rollback();
             json_error('创建订单失败');
         }
-        return compact('order_id');
+        return compact('order_id','payment');
     }
 
     /**

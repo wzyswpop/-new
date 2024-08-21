@@ -2,11 +2,13 @@
 namespace app\api\controller\yp;
 
 use app\admin\model\Comment;
+use app\admin\model\Customize;
 use app\admin\model\Search;
 use app\api\model\Goods as GoodsModel;
 use app\api\model\GoodsCategory;
 use app\api\model\Collect;
 use app\api\model\Coupons;
+use app\api\model\SkuPrice;
 use app\api\model\UserCoupons;
 use EasyWeChat\Factory;
 use app\api\model\UserBrowse;
@@ -136,6 +138,72 @@ class Goods extends Base{
         $info->setInc('see');
         $info->append(['sku']);
         $this->success('成功',$info);
+    }
+
+    public function custom()
+    {
+        $list = Customize::where('status',1)->order('weigh desc')->select();
+        if($list){
+            foreach ($list as $k=>$v){
+                $data_arr = json_decode($v['data'],true);
+                foreach ($data_arr as $k1=>&$v1){
+                    $v1['image'] = GoodsModel::where(['id' => $v1['id'],'status' => '1'])->value('image');
+                    $v1['name'] = GoodsModel::where(['id' => $v1['id'],'status' => '1'])->value('name');
+                }
+                $list[$k]['data_arr'] = $data_arr;
+            }
+        }
+        $this->success('成功',$list);
+    }
+    public function customInfo()
+    {
+        $id = $this->request->param('id');
+        $info = Customize::where('status',1)->where('id',$id)->find();
+        if(!$info){
+            $this->error();
+        }
+        $data_arr = json_decode($info['data'],true);
+        $total_weight = 0;
+        foreach ($data_arr as $k1=>&$v1){
+            $v1['image'] = GoodsModel::where(['id' => $v1['id'],'status' => '1'])->value('image');
+            $v1['name'] = GoodsModel::where(['id' => $v1['id'],'status' => '1'])->value('name');
+            $v1['stock'] = SkuPrice::where(['goods_id'=>$v1['id'],'status'=>'up'])->find();
+            $total_weight += bcmul($v1['ratio']/100,1000,0);
+        }
+        $info['total_weight'] = $total_weight;
+        $info['data_arr'] = $data_arr;
+
+        $this->success('成功',$info);
+    }
+    public function mulGoodsInfo(){
+        $data = $this->request->post();
+        $goods_list = $data['goods_list'];
+        $count = count($goods_list);
+        if($count > 5 || $count < 2){
+            $this->error('商品数量选择错误');
+        }
+        $total_ratio = 0;
+        $total_money = 0;
+        $list = [];
+        $total_weight = 0;
+        $baking = '';
+        foreach ($goods_list as $k=>$v){
+            $total_ratio += $v['ratio'];
+            $goods_info = GoodsModel::with(['stock'])->where(['id' => $v['goods_id'],'is_customized'=>1,'status'=>1])->field('id,name,image,customized_price,baking')->find();
+            if(!$goods_info){
+                $this->error('商品不存在');
+            }
+            if($goods_info['baking']){
+                $baking = $goods_info['baking'];
+            }
+            $total_money = $total_money + bcmul($goods_info['customized_price'],bcdiv($v['ratio'],100,2),2);
+            $total_weight = $total_weight + bcmul(1000,bcdiv($v['ratio'],100,2),0);
+            array_push($list,$goods_info);
+        }
+        if($data['type'] == 2 &&$total_ratio != 100){
+            $this->error('商品比例错误');
+        }
+        $this->success('成功',compact('list','total_money','total_ratio','baking','total_weight'));
     }
     public function commentList()
     {

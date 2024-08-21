@@ -2,6 +2,8 @@
 
 namespace app\api\controller\yp;
 
+use app\admin\model\Comment;
+use app\api\model\OrderItem;
 use think\Request;
 use app\api\model\KuaidiSub;
 use app\api\model\SkuPrice;
@@ -108,7 +110,7 @@ class Order extends Base {
             return $query->field('order_id,num,goods_title,goods_image,stock_title,money,goods_category,goods_id');
         }])
             ->where(['user_id' => $this->auth->id,'id' => $id,'type' => 0])
-            ->field('express_name,express_no,id,status,order_no,name,phone,province_name,city_name,county_name,address,goods_money,freight,order_money,discount_money,level_discount_money,payment,createtime,paytime,canceltime,delivertime,confirmtime')
+            ->field('express_name,express_no,id,status,order_no,name,phone,province_name,city_name,county_name,address,goods_money,order_money,discount_money,payment,createtime,paytime,canceltime,delivertime,confirmtime')
             ->find();
         if(!$order){
             $this->error('订单不存在');
@@ -119,23 +121,94 @@ class Order extends Base {
         $order['canceltime'] = format($order['canceltime']);
         $order['delivertime'] = format($order['delivertime']);
         $order['confirmtime'] = format($order['confirmtime']);
+
+        if($order['express_no']){
+            $kuaidi = KuaidiSub::where(['express_no' => $order['express_no']])->value('data');
+            if($kuaidi){
+                $kuaidi = json_decode($kuaidi,true);
+            }else{
+                $kuaidi = [];
+            }
+        }else{
+            $kuaidi = [];
+        }
+        $order['kuaidi'] = $kuaidi;
+
+
+
         $this->success('成功',$order);
+    }
+    public function comment(){
+        $id = $this->request->param('id');
+        if(!$id){
+            $this->error();
+        }
+        $info = $this->model->where(['id' => $id,'is_comment'=>0,'user_id' => $this->auth->id,'status' => ['in',[4]],'type' => 0])->find();
+        if(!$info){
+            $this->error('订单不存在');
+        }
+        Db::startTrans();
+        try {
+            $insert_data = [];
+            $insert_data['user_id'] = $this->auth->id;
+            $insert_data['order_no'] = $info['order_no'];
+            $insert_data['star'] = $this->request->param('star');
+            $insert_data['comment'] = $this->request->param('comment');
+            $insert_data['images'] = $this->request->param('images');
+            $insert_data['createtime'] = time();
+            $insert_data['updatetime'] = time();
+            $goods_list = OrderItem::where(['order_id' => $id])->select();
+            foreach($goods_list as $k=>$v){
+                $insert_data['goods_id'] = $v['goods_id'];
+                $insert_data['sku_text'] = $v['stock_title']?:'';
+                Comment::insert($insert_data);
+            }
+            $info->is_comment = 1;
+            $info->save();
+        }catch ( \Exception $e ){
+            $this->error($e->getMessage());
+            Db::rollback();
+        }
+        Db::commit();
+        $this->success();
+    }
+
+    public function getComment()
+    {
+        $id = $this->request->param('id');
+        $order_no = $this->model->where('id', $id)->value('order_no');
+        $info = Comment::where(['order_no' => $order_no])->find();
+        if(!$info){
+            $this->error();
+        }
+        if($info['images']){
+            $info['images'] = explode(',',$info['images']);
+        }else{
+            $info['images'] = [];
+        }
+        $this->success('ok',$info);
+
+
     }
 
     /**
      * 订单列表
+     * 0=已取消,1=待支付,2=待发货,3=待收货,4=已完成,5=售后,6=售后完成,7=待评价
+     * 1=待支付,2=待发货,3=待收货,7=待评价
      */
     public function orderList(){
         $type = $this->request->param('type');
         $model = $this->model->with(['item' => function ($query){
             return $query->field('id,order_id,goods_id,num,goods_title,goods_image,stock_title,money,goods_category');
         }])->where(['user_id' => $this->auth->id,'type' => 0])
-            ->field('id,order_no,status,goods_num,order_money');
-        if($type && in_array($type,[1,2,3,4,5])){
-            if($type == 5){
-                $type = 0;
+            ->field('id,order_no,status,goods_num,order_money,is_comment');
+        if($type && in_array($type,[1,2,3,4,5,6,7])){
+            if($type == 7){
+                $model->where(['status' => 4,'is_comment'=>0]);
+            }else{
+                $model->where(['status' => $type]);
             }
-            $model->where(['status' => $type]);
+
         }
         $list = $model->order('createtime DESC')
             ->paginate()
@@ -175,12 +248,38 @@ class Order extends Base {
         if(!$info){
             $this->error('订单不存在');
         }
-        $info->status = '0';
-        $info->canceltime = time();
-        $info->save();
-        foreach ($info['item'] as $v){
-            SkuPrice::where(['id' => $v['stock_id'],'goods_id' => $v['goods_id']])->setInc('stock',$v['num']);
+        Db::startTrans();
+        try {
+
+            //如果使用积分返回用户的积分
+            if($info['discount_integral'] > 0){
+                $res = \app\api\model\User::changeIntegral(
+                    [
+                        'user_id' => $info['user_id'],
+                        'money' => $info['discount_integral'],
+                        'type' => 'add',
+                        'memo' => '取消订单',
+                        'order_no' => $info['order_no'],
+                        'change_type' => 'cancel'
+                    ]
+                );
+                if(!$res){
+                    Db::rollback();
+                    throw new \Exception('扣减积分错误');
+                }
+            }
+            $info->status = '0';
+            $info->canceltime = time();
+            $info->save();
+
+            foreach ($info['item'] as $v){
+                SkuPrice::where(['id' => $v['stock_id'],'goods_id' => $v['goods_id']])->setInc('stock',$v['num']);
+            }
+        }catch (\Exception $e){
+            Db::rollback();
+            $this->error($e->getMessage());
         }
+        Db::commit();
         $this->success();
     }
 
@@ -200,21 +299,7 @@ class Order extends Base {
             }
             $info->status = '4';
             $info->confirmtime = time();
-            $score = floor($info['order_money']);
-            if($score >= 1){
-                $score_log = [
-                    'user_id' => $this->auth->id,
-                    'money' => $score,
-                    'type' => 'add',
-                    'memo' => '确认收货',
-                    'order_no' => $info['order_no'],
-                    'change_type' => 'pay'
-                ];
-                \app\api\model\User::changeIntegral($score_log);
-            }
             $info->save();
-            OrderModel::receiving($this->auth->id);
-            OrderModel::distribution($id);
             Db::commit();
         }catch (Exception $e){
             Db::rollback();

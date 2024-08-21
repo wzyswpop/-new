@@ -75,14 +75,13 @@ class ServiceOrder extends Base {
     public function afterSales(){
         $data = $this->request->post();
         $this->checkData($data);
-        $order_info = Order::where(['id' => $data['id'],'user_id' => $this->auth->id,'status' => ['not in','0,1,4,5,6']])->find();
+        $order_info = Order::where(['id' => $data['id'],'user_id' => $this->auth->id,'status' => ['not in','0,1,5,6']])->find();
         if(!$order_info){
             $this->error('订单不存在');
         }
         if($order_info['order_money'] < $data['money']){
             $this->error('退款金额不能大于订单金额');
         }
-        $service_name = ServiceType::where(['id' => $data['type_id']])->value('name');
         Db::startTrans();
         try{
             $res = [
@@ -94,7 +93,7 @@ class ServiceOrder extends Base {
                 'explain' => $data['explain'],
                 'createtime' => time(),
                 'order_status' => $order_info['status'],
-                'service_name' => $service_name
+                'service_name' => $data['service_name']
             ];
             if($data['images']){
                 $res['images'] = implode(',',$data['images']);
@@ -189,15 +188,18 @@ class ServiceOrder extends Base {
             $this->error('错误');
         }
         $info = $this->model->where(['user_id' => $this->auth->id,'id' => $data['id']])
-            ->field('id,order_id,type,money,explain,service_name,images,createtime,status,return_goods,return_no,return_name,return_money,refuse_memo')
+            ->field('id,order_id,type,money,explain,service_name,images,createtime,handletime,status,return_goods,return_no,return_name,return_money,refuse_memo')
             ->with(['item' => function($query){
             return $query->field('order_id,num,goods_title,goods_image,stock_title');
+            },'orders'=>function ($query1) {
+                return $query1->field('id,status,discount_integral');
             }])->find();
         if(!$info){
             $this->error('数据不存在');
         }
         $info['images'] = explode(',',$info['images']);
         $info['createtime'] = format($info['createtime']);
+        $info['handletime'] = format($info['handletime']);
         $info->append(['return_money_text','type_text','return_text']);
         $this->success('成功',$info);
     }
