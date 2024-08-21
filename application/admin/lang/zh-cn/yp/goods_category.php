@@ -2,6 +2,7 @@
 
 return [
     'Name'       => '名称',
+    'Image'       => '图片',
     'Weigh'      => '权重',
     'Createtime' => '创建时间',
     'Status'     => '状态',

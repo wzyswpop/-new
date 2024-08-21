@@ -1,6 +1,8 @@
 <?php
 namespace app\api\controller\yp;
 
+use app\admin\model\Comment;
+use app\admin\model\Search;
 use app\api\model\Goods as GoodsModel;
 use app\api\model\GoodsCategory;
 use app\api\model\Collect;
@@ -11,7 +13,7 @@ use app\api\model\UserBrowse;
 
 class Goods extends Base{
 
-    protected $noNeedLogin = ['hotgoods','goodslist','category','info'];
+    protected $noNeedLogin = ['hotgoods','category','info'];
 
 
     /**
@@ -92,9 +94,9 @@ class Goods extends Base{
         if(!$id){
             $this->error();
         }
-        $info = GoodsModel::where(['id' => $id,'status' => '1'])
+        $info = GoodsModel::where(['id' => $id,'status' => '1','is_customized'=>0])
             ->with(['stock'])
-            ->field('id,images,money,name,sales,see,content,is_stock,image')
+            ->field('id,images,money,line_money,name,sales,see,content,is_stock,image,product_area,bean_seed,special_flavour,processing_method,moisture_content,density,specs,baking')
             ->find();
         if(!$info){
             $this->error('商品不存在');
@@ -103,35 +105,70 @@ class Goods extends Base{
         $info['content'] = str_replace('src="/uploads','src="https://'.$this->request->host().'/uploads',$info['content']);
         $info->setInc('see');
         $info->append(['sku']);
-        $info['is_collect'] = 0;
-        $coupons = Coupons::where(function ($query) use ($info) {
-            $table = UserCoupons::getTable();
-            return $query->whereRaw("find_in_set({$info['id']},goods_ids) or goods_ids = ''")->whereNotIn('id',"select coupons_id from {$table} where user_id = {$this->auth->id}");
-        })->where(['stock' => ['>',0],'status' => '1','endtime' => ['>',time()]])->field('id,name,goods_type,amount,use_money,day,endtime');
-        if($this->auth->isLogin()){
-            $coupons->whereNotExists(function ($query){
-                $userCoupons = UserCoupons::getTable();
-                $coupons = Coupons::getTable();
-                $query->table($userCoupons)->where($coupons.'.id = '.$userCoupons.'.coupons_id')->where('user_id',$this->auth->id);
-                return $query;
-            });
-        }
-        $coupons = $coupons->select();
-        foreach ($coupons as &$v){
-            $v['is_get'] = 0;
-            if($this->auth->isLogin()){
-                $v['is_get'] = UserCoupons::where(['coupons_id' => $v['id'],'user_id' => $this->auth->id])->find() ? 1 : 0;
+        $comment_count = Comment::where(['goods_id'=>$id,'status'=>1])->count();
+        $comment_list = Comment::where(['goods_id'=>$id,'status'=>1])->order('star desc,id desc')->limit(1)->select();
+        foreach ($comment_list as $k=>&$v)
+        {
+            $v['avatar'] = \app\api\model\User::where('id',$v['user_id'])->value('avatar');
+            $v['nickname'] = \app\api\model\User::where('id',$v['user_id'])->value('nickname');
+            if($v['images']){
+                $v['images'] = explode(",",$v['images']);
+            }else{
+                $v['images'] = [];
             }
-            $v['endtime'] = format($v['endtime']);
         }
-        unset($v);
-        $info['coupons'] = $coupons;
-        if($this->auth->isLogin()){
-            $info['is_collect'] = Collect::where(['user_id' => $this->auth->id,'goods_id' => $info['id']])->find() ? 1 : 0;
-            UserBrowse::insert(['user_id' => $this->auth->id,'goods_title' => $info['name'],'goods_image' => $info['image'],'createtime' => time()]);
-        }
+        $info['comment_count'] = $comment_count;
+        $info['comment_list'] = $comment_list;
         $this->success('成功',$info);
     }
+    public function singleInfo(){
+        $id = $this->request->param('id');
+        if(!$id){
+            $this->error();
+        }
+        $info = GoodsModel::where(['id' => $id,'status' => '1','is_customized'=>1])
+            ->with(['stock'])
+            ->field('id,images,money,line_money,name,sales,see,content,is_stock,image,product_area,bean_seed,special_flavour,processing_method,moisture_content,density,specs,baking')
+            ->find();
+        if(!$info){
+            $this->error('商品不存在');
+        }
+        $info->setInc('see');
+        $info->append(['sku']);
+        $this->success('成功',$info);
+    }
+    public function commentList()
+    {
+        $id = $this->request->param('id');
+        $image = $this->request->param('image');
+        if($image){
+            $list = Comment::where('goods_id',$id)->where('status',1)->whereNotNull('images')->order('id desc')->paginate()->each(function ($item, $key) {
+                $item['avatar'] = \app\api\model\User::where('id',$item['user_id'])->value('avatar');
+                $item['nickname'] = \app\api\model\User::where('id',$item['user_id'])->value('nickname');
+                if($item['images']){
+                    $item['images'] = explode(",",$item['images']);
+                }else{
+                    $item['images'] = [];
+                }
+                return $item;
+            });
+        }else{
+            $list = Comment::where('goods_id',$id)->where('status',1)->order('id desc')->paginate()->each(function ($item, $key) {
+                $item['avatar'] = \app\api\model\User::where('id',$item['user_id'])->value('avatar');
+                $item['nickname'] = \app\api\model\User::where('id',$item['user_id'])->value('nickname');
+                if($item['images']){
+                    $item['images'] = explode(",",$item['images']);
+                }else{
+                    $item['images'] = [];
+                }
+                return $item;
+            });
+        }
+        $this->success('ok',$list);
+
+    }
+
+
 
     /**
      * 热销商品
@@ -154,21 +191,70 @@ class Goods extends Base{
     public function goodsList(){
         $name = $this->request->param('name');
         $category_id = $this->request->param('category_id');
-        $model = GoodsModel::where(['status' => '1']);
+        $model = GoodsModel::where(['status' => '1','is_customized'=>0]);
         if($name){
             $model->where(['name' => ['like',"%{$name}%"]]);
+            //添加搜索历史
+            $insert_data = [];
+            $insert_data['name'] = $name;
+            $insert_data['user_id'] = $this->auth->id;
+            $insert_data['createtime'] = time();
+            Search::insert($insert_data);
         }
         if($category_id){
             $model->where(['category_id' => $category_id]);
+            $category = GoodsCategory::where(['id' => $category_id])->find();
+        }else{
+            $category = [];
         }
-        $list = $model->field('id,name,image,money,category_id')
+        $list = $model->field('id,name,image,money,category_id,sales')
             ->order('weigh desc,createtime desc')
             ->paginate()
             ->each(function ($key){
                 $key->append(['goods_category']);
                 return $key;
             });
-        $this->success('成功',$list);
+        $this->success('成功',compact('list','category'));
+    }
+
+    public function customeGoodsList(){
+        $name = $this->request->param('name');
+        $category_id = $this->request->param('category_id');
+        $model = GoodsModel::where(['status' => '1','is_customized'=>1]);
+        if($name){
+            $model->where(['name' => ['like',"%{$name}%"]]);
+            //添加搜索历史
+           /* $insert_data = [];
+            $insert_data['name'] = $name;
+            $insert_data['user_id'] = $this->auth->id;
+            $insert_data['createtime'] = time();
+            Search::insert($insert_data);*/
+        }
+        if($category_id){
+            $model->where(['category_id' => $category_id]);
+            $category = GoodsCategory::where(['id' => $category_id])->find();
+        }else{
+            $category = [];
+        }
+        $list = $model->field('id,name,image,customized_price,category_id,sales,product_area,bean_seed,processing_method,special_flavour,moisture_content,density,specs,baking')
+            ->order('weigh desc,createtime desc')
+            ->paginate()
+            ->each(function ($key){
+                $key->append(['goods_category']);
+                return $key;
+            });
+        $this->success('成功',compact('list','category'));
+    }
+
+    public function searchHistory()
+    {
+      $list = Search::where('user_id',$this->auth->id)->order('createtime desc')->select();
+      $this->success('ok',$list);
+    }
+    public function clearHistory()
+    {
+        Search::where('user_id',$this->auth->id)->delete();
+        $this->success('ok');
     }
 
     /**
@@ -179,6 +265,11 @@ class Goods extends Base{
             ->field('id,name')
             ->order('weigh desc')
             ->select();
-        $this->success('成功',$list);
+        $new_list[0]['id'] = 0;
+        $new_list[0]['name'] = '全部';
+        foreach ($list as $k=>$v){
+            array_push($new_list,$v);
+        }
+        $this->success('成功',$new_list);
     }
 }

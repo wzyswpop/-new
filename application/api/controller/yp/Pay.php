@@ -252,12 +252,14 @@ class Pay extends Base{
         }
         if($payment == 'balance'){
             $this->balance($order_info);
+        }else{
+            $order_money = $order_info['order_money'] - $order_info['cash_money'];
         }
         if(!$this->auth->open_id){
             $this->error('缺少 openid');
         }
         $params = [
-            'amount'=>$order_info['order_money'],
+            'amount'=>$order_money,
             'orderid'=>$order_info['order_no'],
             'type' =>"wechat",
             'title'=>"购买商品",
@@ -293,18 +295,19 @@ class Pay extends Base{
             if(!$res){
                 throw new Exception('失败');
             }
-//            $score = floor($order['order_money']);
-//            if($score >= 1){
-//                $score_log = [
-//                    'user_id' => $this->auth->id,
-//                    'money' => $score,
-//                    'type' => 'add',
-//                    'memo' => '支付订单增加',
-//                    'order_no' => $order['order_no'],
-//                    'change_type' => 'pay'
-//                ];
-//                User::changeIntegral($score_log);
-//            }
+            $order_integral = getValues('order_integral');
+            $score = floor($order['order_money']*$order_integral);
+            if($score >= 1){
+                $score_log = [
+                    'user_id' => $this->auth->id,
+                    'money' => $score,
+                    'type' => 'add',
+                    'memo' => '支付订单增加',
+                    'order_no' => $order['order_no'],
+                    'change_type' => 'pay'
+                ];
+               User::changeIntegral($score_log);
+            }
             $order->status = '2';
             $order->payment = 'balance';
             $order->paytime = time();
@@ -314,7 +317,6 @@ class Pay extends Base{
             Db::rollback();
             $this->error($e->getMessage());
         }
-        pushOrder($order['id'],30,30,0);
         $this->success();
     }
 }

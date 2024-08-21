@@ -68,16 +68,13 @@ class Order extends Base
         $goods_list = $data['goods_list'];
         $all_money = 0;        //订单总金额
         $goods_money = 0;      //商品总金额
-        $discount_money = 0;   //优惠券优惠金额
-        $zhekou_money = 0;     //等级折扣金额
-        $coupon_id = empty($data['coupon_id']) ? 0 : $data['coupon_id'];
-        $coupon_info = [];
         $freight = 0;          //运费
         $goods_num = 0;
+        $order_type = 0;
         $goods_ids = [];
         foreach ($goods_list as &$v){
             $goods_ids[] = $v['goods_id'];
-            $goods_info = Goods::where(['id' => $v['goods_id'],'status' => '1'])->field('id,name,image,category_id,is_stock,freight_id')->find();
+            $goods_info = Goods::where(['id' => $v['goods_id'],'status' => '1'])->field('id,name,image,category_id,is_stock,is_customized,customized_price')->find();
             if(!$goods_info){
                 json_error('商品不存在');
             }
@@ -92,57 +89,38 @@ class Order extends Base
             }
             $goods_stock['goods_category'] = $goods_info['category'];
             $v['stock'] = $goods_stock;
-            $v['money'] = $goods_stock['money'] * $v['num'];
+            if($v['is_customized'] == 1){
+                $order_type = 1;
+                $v['money'] = bcmul($goods_info['customized_price'],$data['weight']/1000);
+            }else{
+                $v['money'] = $goods_stock['money'] * $v['num'];
+            }
             $goods_money += $v['money'];
             $goods_money = number_format($goods_money,2);
             $goods_num += $v['num'];
-            $freight_data = $this->freight($v,$goods_info,$address_info);
-            $freight += $freight_data['price'];
         }
         unset($v);
         $all_money += $goods_money;
-        $discount = Level::where(['id' => $user_info->level_id])->value('discount');
-        if($discount && $discount > 0){
-            $discount = bcdiv($discount,10,2);
-            $zhekou = bcmul($all_money,$discount,2);
-            $zhekou_money = $all_money - $zhekou;
-            $all_money = $zhekou;
+        $intergal = $user_info['integral'];
+        $cash_integral = getValues('cash_integral');
+        $intergal_cash = 0.00;
+        if($cash_integral > 0){
+            $intergal_cash = bcdiv($intergal,$cash_integral,2);
         }
-        $availableCoupons = $this->availableCoupons($goods_ids,$all_money,$user_info->id);
-        //是否使用优惠券
-        if($coupon_id){
-            $coupon = UserCoupons::where(['id' => $coupon_id,'user_id' => $user_info->id,'status' => '1','endtime' => ['>',time()],'use_money' => ['<=',$all_money]])
-                ->find();
-            if(!$coupon){
-                json_error('优惠券不存在');
-            }
-            $coupon_info = $coupon;
-            $is_discount = false;
-            if($coupon['goods_type'] == 1){
-                $is_discount = true;
-            }else{
-                $goods_ids = array_column($goods_list,'goods_id');
-                $coupon_goods_ids = explode(',',$coupon['goods_ids']);
-                foreach ($coupon_goods_ids as $v){
-                    if(in_array($v,$goods_ids)){
-                        $is_discount = true;
-                        break;
-                    }
-                }
-            }
-            if($is_discount){
-                $all_money -= $coupon['amount'];
-                $discount_money = $coupon['amount'];
-            }
+        $discount_money = 0;
+
+        if($data['use_integral'] == 1 && $intergal && $intergal > 0 && $cash_integral> 0){
+            $discount_money = bcdiv($intergal,$cash_integral,2);
+            $all_money = $all_money - $discount_money;
         }
         if($all_money <= 0){
-            $all_money = 0.01;
+            $all_money = 0;
         }
         $all_money += $freight;
         $all_money = number_format($all_money,2);
-        $freight = number_format($freight,2);
-        $zhekou_money = number_format($zhekou_money, 2);
-        return compact('availableCoupons','all_money','discount_money','goods_list','coupon_id','coupon_info','goods_money','freight','goods_num','return','zhekou_money');
+        $user_money = $user_info['money'];
+
+        return compact('order_type','user_money','all_money','discount_money','goods_list','goods_money','goods_num','return','intergal','intergal_cash','address_info');
     }
 
     /**
@@ -231,25 +209,45 @@ class Order extends Base
         $info = $this->pre($data,$user_id);
         $this->startTrans();
         try{
-            if($data['coupon_id'] && $info['discount_money'] > 0){
-                if(!UserCoupons::where(['id' => $data['coupon_id'],'user_id' => $user_id,'status' => '1'])->update(['status' => '2'])){
-                    throw new Exception('优惠券不存在');
-                }
-            }
+            $order_no = $this->order_no($user_id);
             $order_data = [
+                'order_type' => $info['order_type'],
                 'user_id' => $user_id,
-                'order_no' => $this->order_no($user_id),
+                'order_no' => $order_no,
                 'order_money' => $info['all_money'],
                 'goods_money' => $info['goods_money'],
                 'discount_money' => $info['discount_money'],
-                'coupon_id' => $info['coupon_id'],
-                'freight' => $info['freight'],
                 'createtime' => time(),
                 'remarks' => $data['remarks'],
-                'goods_num' => $info['goods_num'],
-                'level_discount_money' => $info['zhekou_money']
+                'goods_num' => $info['goods_num']
             ];
             $order_data = array_merge($order_data,$address_info);
+            //判断用户余额
+            $userInfo = User::where(['id'=>$user_id])->field('id')->find();
+            if($data['use_integral'] == 1){
+                //扣除积分
+                $res = User::changeIntegral(
+                    [
+                        'user_id' => $userInfo['id'],
+                        'money' => $data['integral'],
+                        'type' => 'sub',
+                        'memo' => '订单抵扣',
+                        'order_no' => $order_no,
+                        'change_type' => 'pay_integral'
+                    ]
+                );
+                if(!$res){
+                    Db::rollback();
+                    throw new \Exception('扣减积分错误');
+                }
+            }
+            if($userInfo['money'] >= $info['all_money']){
+                $order_data['payment'] = 'balance';
+            }else{
+                $order_data['cash_money'] = $userInfo['money'];
+                $order_data['payment'] = 'wechat';
+            }
+
             $order_id = $this->insertGetId($order_data);
             if(!$order_id){
                 throw new Exception('');
@@ -269,8 +267,14 @@ class Order extends Base
                     'money' => $v['money'],
                     'json' => json_encode($v),
                     'goods_category' => $v['stock']['goods_category'],
-                    'unit_price' => $v['stock']['money']
+                    'unit_price' => $v['stock']['money'],
                 ];
+                if(isset($v['weight']) && $v['weight'] > 0){
+                    $item['weight'] = $v['weight'];
+                }
+                if(isset($v['baking']) && !empty($v['baking'])){
+                    $item['baking'] = $v['baking'];
+                }
                 SkuPrice::where(['id' => $v['stock_id']])->setDec('stock',$v['num']);
                 $order_item[] = $item;
             }
