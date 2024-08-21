@@ -168,6 +168,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             processing_method:'',
                             moisture_content:'',
                             density:'',
+                            specs:'',
+                            baking:'',
                             status: 1,
                             sales:0,
                             see:0,
