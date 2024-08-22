@@ -114,4 +114,5 @@ return array (
 <p>最终解释权归三诺食品集团有限公司所有</p>',
   'cash_integral' => '10',
   'order_integral' => '10',
+  'keyv3' => 'yqFpBLj64m2G60U0xwx1zh8kWP2ukPNO',
 );

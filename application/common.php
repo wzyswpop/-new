@@ -195,14 +195,14 @@ if (!function_exists('pay_config')){
 if (!function_exists('transfer_config')){
 
     function transfer_config(){
-        $config = getValues(['mch_id','key','miniapp_id']);
+        $config = getValues(['mch_id','v3key','miniapp_id']);
         return [
             // 可选，公众号APPID
             'appid'        => $config['miniapp_id'],
             // 必填，微信商户编号ID
             'mch_id'       => $config['mch_id'],
             // 必填，微信商户V3接口密钥
-            'mch_v3_key'   => $config['key'],
+            'mch_v3_key'   => $config['v3key'],
             // 可选，微信商户证书序列号，可从公钥中提取
             'cert_serial'  => '',
             // 必填，微信商户证书公钥，支持证书内容或文件路径
