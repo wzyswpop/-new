@@ -12,6 +12,7 @@ use app\api\model\Goods;
 use app\api\model\SkuPrice;
 use app\api\model\User;
 use think\Request;
+use addons\epay\library\Service;
 
 require_once ROOT_PATH.'extend'.DS.'erp'.DS.'WdtClient.php';
 
@@ -196,6 +197,7 @@ if (!function_exists('transfer_config')){
 
     function transfer_config(){
         $config = getValues(['mch_id','v3key','miniapp_id']);
+        $cert_config = Service::getConfig();
         return [
             // 可选，公众号APPID
             'appid'        => $config['miniapp_id'],
@@ -206,9 +208,9 @@ if (!function_exists('transfer_config')){
             // 可选，微信商户证书序列号，可从公钥中提取
             'cert_serial'  => '',
             // 必填，微信商户证书公钥，支持证书内容或文件路径
-            'cert_public'  =>'/addons/epay/certs/apiclient_cert.pem',
+            'cert_public'  => $cert_config['cert_client'],
             // 必填，微信商户证书私钥，支持证书内容或文件路径
-            'cert_private' => '/addons/epay/certs/apiclient_cert.pem',
+            'cert_private' => $cert_config['cert_key'],
             // 可选，运行时的文件缓存路径
             'cache_path'   => ''
         ];

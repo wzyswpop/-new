@@ -52,9 +52,10 @@ class Withdrawal extends Model
         try {
             $config = transfer_config();
             var_dump($config);
-            die();
+
 
             $pay =\WePayV3\Transfers::instance($config);
+            die();
 
             $result = $pay->batchs([
                 'out_batch_no'         => $params['order_no'],
