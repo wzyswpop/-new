@@ -84,11 +84,8 @@ class ServiceOrder extends Backend
         if($type == 'yes'){
             Db::startTrans();
             try{
+                $out_detail_no = '';
                 $orderInfo = \app\admin\model\Order::where(['id'=>$info['order_id']])->find();
-                $info->status = '1';
-                $info->handletime = time();
-                $info->return_money = 2;
-                $info->save();
                 //判断支付方式
                 if($orderInfo['payment'] == 'balance'){
                     $data = [
@@ -102,7 +99,7 @@ class ServiceOrder extends Backend
                     $res = User::changeMoney($data);
                 }else{
                     //余额返还
-                    if($orderInfo['cash_money'] > 0  && $orderInfo['cash_money'] >= $info['money']){
+                    if($orderInfo['cash_money'] >= $info['money']){
                         $data = [
                             'user_id' => $info['user_id'],
                             'money' => $info['money'],
@@ -112,22 +109,72 @@ class ServiceOrder extends Backend
                             'change_type' => 'service_order'
                         ];
                         $res = User::changeMoney($data);
-                    }elseif($orderInfo['cash_money'] > 0  && $orderInfo['cash_money'] < $info['money']){
-                        $data = [
-                            'user_id' => $info['user_id'],
-                            'money' => $orderInfo['cash_money'],
-                            'type' => 'add',
-                            'memo' => '退款',
-                            'order_no' => $info['order_no'],
-                            'change_type' => 'service_order'
-                        ];
-                        $res = User::changeMoney($data);
+                    }elseif($orderInfo['cash_money'] < $info['money']){
+                        if($orderInfo['cash_money'] > 0 ){
+                            $data = [
+                                'user_id' => $info['user_id'],
+                                'money' => $orderInfo['cash_money'],
+                                'type' => 'add',
+                                'memo' => '退款',
+                                'order_no' => $info['order_no'],
+                                'change_type' => 'service_order'
+                            ];
+                            $res = User::changeMoney($data);
+                        }
                         //微信退款
+                        $amount_received = $info['money'] - $orderInfo['cash_money'];
+                        if($amount_received <= 500){
+                            $userInfo = User::get($info['user_id']);
+                            $out_detail_no = order_no();
+                            $params = [];
+                            $params['order_no'] = $info['order_no'];
+                            $params['desc'] = '售后退款';
+                            $params['total_amount'] = (int)($amount_received * 100);
+                            $params['batch_list'][0]['out_detail_no'] = $out_detail_no;
+                            $params['batch_list'][0]['transfer_amount'] = (int)($amount_received * 100);
+                            $params['batch_list'][0]['transfer_remark'] = '售后退款';
+                            if(!$userInfo['open_id']){
+                                Db::rollback();
+                                throw new \Exception('用户的openid不存在');
+                            }
+                            $params['batch_list'][0]['openid'] = $userInfo['open_id'];
+                            $with = new \app\admin\model\yp\Withdrawal();
+                            $res = $with->transfer($params);
 
 
+                        }else{
+                            $userInfo = User::get($info['user_id']);
+                            if(!$userInfo['open_id']){
+                                Db::rollback();
+                                throw new \Exception('用户的openid不存在');
+                            }
+                            $params = [];
+                            $params['order_no'] = $info['order_no'];
+                            $params['desc'] = '提现';
+                            $params['total_amount'] = (int)($amount_received * 100);
+                            $i = 0;
+                            $out_detail_no = '';
+                            while ($amount_received > 0) {
+                                $out_detail_no .= order_no().',';
+                                $params['batch_list'][$i]['out_detail_no'] = $out_detail_no;
+                                $params['batch_list'][$i]['transfer_amount'] = (int)(500 * 100);
+                                $params['batch_list'][$i]['transfer_remark'] = '提现';
+                                $i++;
+                                $amount_received = $amount_received - 500;
+                            }
+                            $with = new \app\admin\model\yp\Withdrawal();
+                            $res = $with->transfer($params);
+
+
+                        }
 
                     }
                 }
+                $info->status = '1';
+                $info->handletime = time();
+                $info->return_money = 2;
+                $info->out_detail_no = $out_detail_no;
+                $info->save();
                 \app\admin\model\yp\Order::where(['id' => $info['order_id']])->update(['status' => '6']);
                 Db::commit();
             }catch (Exception $e){

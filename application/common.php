@@ -192,6 +192,30 @@ if (!function_exists('pay_config')){
         return $data;
     }
 }
+if (!function_exists('transfer_config')){
+
+    function transfer_config(){
+        $config = getValues(['mch_id','key','miniapp_id']);
+        return [
+            // 可选，公众号APPID
+            'appid'        => $config['miniapp_id'],
+            // 必填，微信商户编号ID
+            'mch_id'       => $config['mch_id'],
+            // 必填，微信商户V3接口密钥
+            'mch_v3_key'   => $config['key'],
+            // 可选，微信商户证书序列号，可从公钥中提取
+            'cert_serial'  => '',
+            // 必填，微信商户证书公钥，支持证书内容或文件路径
+            'cert_public'  =>'/addons/epay/certs/apiclient_cert.pem',
+            // 必填，微信商户证书私钥，支持证书内容或文件路径
+            'cert_private' => '/addons/epay/certs/apiclient_cert.pem',
+            // 可选，运行时的文件缓存路径
+            'cache_path'   => ''
+        ];
+    }
+}
+
+
 if (!function_exists('order_no')){
     function order_no(){
         return date('YmdHis') . substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 8);

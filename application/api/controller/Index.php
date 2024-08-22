@@ -3,6 +3,7 @@ namespace app\api\controller;
 
 use app\admin\model\Banner;
 use app\admin\model\Feedback;
+use app\admin\model\yp\Withdrawal;
 use app\api\controller\yp\Base;
 use think\Request;
 use think\Db;
@@ -10,7 +11,7 @@ use think\Exception;
 use app\common\model\Config;
 class Index extends  Base
 {
-    protected $noNeedLogin = ['doc','indexData'];
+    protected $noNeedLogin = ['doc','indexData','test'];
     protected $noNeedRight = '*';
 
     public function __construct(Request $request = NULL) {
@@ -61,6 +62,12 @@ class Index extends  Base
             $list = \app\api\model\Goods::where('status',1)->where('is_customized',0)->where('is_hot',1)->field('id,name,status,is_customized,is_hot,classify,weigh,money,image,sales')->order('weigh','desc')->paginate();
         }
         $this->success('ok',compact('banner','list'));
+    }
+
+    public function test()
+    {
+        $w = new Withdrawal();
+        $w->transfer();
     }
 
 

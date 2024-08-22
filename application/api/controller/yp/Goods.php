@@ -98,7 +98,7 @@ class Goods extends Base{
         }
         $info = GoodsModel::where(['id' => $id,'status' => '1','is_customized'=>0])
             ->with(['stock'])
-            ->field('id,images,money,line_money,name,sales,see,content,is_stock,image,product_area,bean_seed,special_flavour,processing_method,moisture_content,density,specs,baking')
+            ->field('id,images,money,line_money,name,desc,sales,see,content,is_stock,image,product_area,bean_seed,special_flavour,processing_method,moisture_content,density,specs,baking')
             ->find();
         if(!$info){
             $this->error('商品不存在');

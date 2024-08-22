@@ -2,6 +2,7 @@
 
 namespace app\api\model;
 
+use app\admin\model\Customize;
 use think\Model;
 use think\Exception;
 use think\Db;
@@ -119,7 +120,11 @@ class Order extends Base
             }
         }
         unset($v);
-        $all_money += $goods_money;
+        if(isset($data['customize_id']) && $data['customize_id'] > 0){//定制配方
+            $all_money  = Customize::where(['id' => $data['customize_id']])->value('price');
+        }else{
+            $all_money += $goods_money;
+        }
         $intergal = $user_info['integral'];
         $cash_integral = getValues('cash_integral');
         $intergal_cash = 0.00;

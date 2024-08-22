@@ -30,7 +30,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form','selectpage'], functio
                         {field: 'baking', title: __('烘焙程度'), operate: 'LIKE'},
                         {field: 'title', title: __('Title'), operate: 'LIKE'},
                         {field: 'desc', title: __('Desc'), operate: 'LIKE'},
-                        {field: 'data', title: __('Data'), operate: 'LIKE'},
+                        //{field: 'data', title: __('Data'), operate: 'LIKE'},
                         {field: 'sale', title: __('Sale')},
                         {field: 'price', title: __('价格')},
                         {field: 'status', title: __('Status'), searchList: {"0":__('Status 0'),"1":__('Status 1')}, formatter: Table.api.formatter.status},

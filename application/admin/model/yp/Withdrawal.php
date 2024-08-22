@@ -47,28 +47,29 @@ class Withdrawal extends Model
         return $this->belongsTo('app\admin\model\User', 'user_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
 
-    public function transfer()
+    public function transfer($params=[])
     {
         try {
-            $config = include "./pay-v3-config.php";
-            //$config =  [];
+            $config = transfer_config();
+            var_dump($config);
+            die();
 
             $pay =\WePayV3\Transfers::instance($config);
 
             $result = $pay->batchs([
-                'out_batch_no'         => 'plfk2020042013',
-                'batch_name'           => '2019年1月深圳分部报销单',
-                'batch_remark'         => '2019年1月深圳分部报销单',
-                'total_amount'         => 100,
-                'transfer_detail_list' => [
+                'out_batch_no'         => $params['order_no'],
+                'batch_name'           => $params['desc'],
+                'batch_remark'         => $params['desc'],
+                'total_amount'         => $params['total_amount'],
+                'transfer_detail_list' => $params['batch_list'],
+                /*'transfer_detail_list' => [
                     [
-                        'out_detail_no'   => 'x23zy545Bd5436',
-                        'transfer_amount' => 100,
-                        'transfer_remark' => '2020年4月报销',
-                        'openid'          => 'o-MYE42l80oelYMDE34nYD456Xoy',
-                        'user_name'       => '小小邹'
+                        'out_detail_no'   => $params['out_detail_no'],
+                        'transfer_amount' => $params['transfer_amount'],
+                        'transfer_remark' => $params['desc'],
+                        'openid'          => $params['openid']
                     ]
-                ]
+                ]*/
             ]);
             var_dump($result);
 

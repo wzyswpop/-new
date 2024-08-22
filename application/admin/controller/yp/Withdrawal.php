@@ -110,9 +110,68 @@ class Withdrawal extends Backend
                 $this->error($e->getMessage());
             }
         }else{
-            $info->status = '2';
-            $info->handletime = time();
-            $info->save();
+            Db::startTrans();
+            try{
+                $amount_received = $info['amount_received'];
+                if($amount_received <= 500){
+                    $userInfo = User::get($info['user_id']);
+                    $out_detail_no = order_no();
+                    $params = [];
+                    $params['order_no'] = $info['order_no'];
+                    $params['desc'] = '提现';
+                    $params['total_amount'] = (int)($amount_received * 100);
+                    $params['batch_list'][0]['out_detail_no'] = $out_detail_no;
+                    $params['batch_list'][0]['transfer_amount'] = (int)($amount_received * 100);
+                    $params['batch_list'][0]['transfer_remark'] = '提现';
+                    if(!$userInfo['open_id']){
+                        Db::rollback();
+                        throw new \Exception('用户的openid不存在');
+                    }
+                    $params['batch_list'][0]['openid'] = $userInfo['open_id'];
+                    $res = $this->model->transfer($params);
+
+                    $info->status = '2';
+                    $info->out_detail_no = $out_detail_no;
+                    $info->handletime = time();
+                    $info->save();
+
+                }else{
+                    $userInfo = User::get($info['user_id']);
+                    if(!$userInfo['open_id']){
+                        Db::rollback();
+                        throw new \Exception('用户的openid不存在');
+                    }
+                    $params = [];
+                    $params['order_no'] = $info['order_no'];
+                    $params['desc'] = '提现';
+                    $params['total_amount'] = (int)($amount_received * 100);
+                    $i = 0;
+                    $out_detail_no = '';
+                    while ($amount_received > 0) {
+                        $out_detail_no .= order_no().',';
+                        $params['batch_list'][$i]['out_detail_no'] = $out_detail_no;
+                        $params['batch_list'][$i]['transfer_amount'] = (int)(500 * 100);
+                        $params['batch_list'][$i]['transfer_remark'] = '提现';
+                        $i++;
+                        $amount_received = $amount_received - 500;
+                    }
+                    $res = $this->model->transfer($params);
+
+                    $info->status = '2';
+                    $info->out_detail_no = trim($out_detail_no,',');
+                    $info->handletime = time();
+                    $info->save();
+
+                }
+                Db::commit();
+            }catch (Exception $e){
+                Db::rollback();
+                $this->error($e->getMessage());
+            }
+
+
+
+
         }
         $this->success('成功');
     }

@@ -1,7 +1,7 @@
 <?php
 
 return array (
-  'name' => '咖啡',
+  'name' => '夯萃咖啡',
   'beian' => '',
   'cdnurl' => '',
   'version' => '1.0.2',
@@ -23,18 +23,11 @@ return array (
   'configgroup' => 
   array (
     'basic' => '基础配置',
-    'email' => '邮件配置',
-    'dictionary' => '字典配置',
-    'index' => '首页配置',
-    'order' => '订单配置',
     'withdrawal' => '提现配置',
-    'return' => '退货地址配置',
     'miniapp' => '小程序配置',
     'pay' => '支付配置',
     'kuaidi' => '快递100配置',
     'article' => '文章配置',
-    'distribution' => '分销设置',
-    'erp' => '旺店通设置',
   ),
   'mail_type' => '1',
   'mail_smtp_host' => 'smtp.qq.com',
@@ -102,4 +95,23 @@ return array (
   'shop_no' => 'pxh02-test',
   'send_integral' => '10',
   'sign_day_integral_num' => '0',
+  'single_address' => '<p><strong>1级 &nbsp;&nbsp;&nbsp;锋芒初现 &nbsp;下单即享 &nbsp;&nbsp;9.8折</strong></p>
+<p><strong>2级 &nbsp;&nbsp;&nbsp;登堂入室 &nbsp;&nbsp;满100 &nbsp;&nbsp;&nbsp;&nbsp;9.5折</strong></p>
+<p><strong>3级 &nbsp;&nbsp;&nbsp;耀眼芳华 &nbsp;&nbsp;满500&nbsp; &nbsp; &nbsp;9折</strong></p>
+<p><strong>4级 &nbsp;&nbsp;&nbsp;引领风骚 &nbsp;&nbsp;满1000 &nbsp;&nbsp;&nbsp;8.8折</strong></p>
+<p><strong>5级 &nbsp;&nbsp;&nbsp;傲然绝世 &nbsp;&nbsp;满9999 &nbsp;&nbsp;&nbsp;8.5折</strong></p>',
+  'yishi_article' => '<p><strong>签到规则：</strong></p>
+<p>会员签到机制</p>
+<p>28天一周期</p>
+<p>签到第7天送饮料两瓶</p>
+<p>签到第14天送饮料一瓶</p>
+<p>签到第21天送饮料一瓶</p>
+<p>签到第28天送饮料两瓶</p>
+<p>合计六瓶 签到周期完结后随机送饮料六瓶装一提</p>
+<p>规则</p>
+<p>1 断签归零 &nbsp;请保持连续签到</p>
+<p>2赠品为随机6瓶装一提包邮寄送，不接受指定产品</p>
+<p>最终解释权归三诺食品集团有限公司所有</p>',
+  'cash_integral' => '10',
+  'order_integral' => '10',
 );

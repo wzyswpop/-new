@@ -158,6 +158,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         goodsDetailInit: {
                             freight_id:'',
                             name: '',
+                            desc: '',
                             is_hot:1,
                             classify:1,
                             is_customized:0,
