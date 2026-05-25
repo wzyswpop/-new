@@ -88,20 +88,82 @@ class Recipe extends Base{
         return $available;
     }
 
+    protected function normalizeShareCode($shareCode)
+    {
+        return preg_replace('/[^a-zA-Z0-9]/', '', (string)$shareCode);
+    }
+
+    protected function generateShareCode()
+    {
+        if(function_exists('random_bytes')){
+            try {
+                return bin2hex(random_bytes(16));
+            } catch (\Exception $e) {
+            }
+        }
+        return md5(uniqid(mt_rand(), true) . microtime(true));
+    }
+
+    protected function ensureRecipeShareCode(&$item)
+    {
+        if(!$this->userRecipeHasColumn('share_code')){
+            return '';
+        }
+        $code = trim(isset($item['share_code']) ? $item['share_code'] : '');
+        if($code !== ''){
+            return $code;
+        }
+        $id = isset($item['id']) ? (int)$item['id'] : 0;
+        if(!$id){
+            return '';
+        }
+        for($i = 0; $i < 5; $i++){
+            $code = $this->generateShareCode();
+            try {
+                $updated = UserRecipe::where('id', $id)->update(['share_code' => $code]);
+                if($updated !== false){
+                    $item['share_code'] = $code;
+                    return $code;
+                }
+            } catch (\Exception $e) {
+            }
+        }
+        return '';
+    }
+
+    protected function findAccessibleUserRecipe($id, $shareCode = '')
+    {
+        if(!$this->userRecipeHasColumn('public_status')){
+            return null;
+        }
+        $id = (int)$id;
+        $public = UserRecipe::where(['id' => $id, 'status' => 'normal'])
+            ->where('public_status', 'public')
+            ->find();
+        if($public){
+            return $public;
+        }
+        $shareCode = $this->normalizeShareCode($shareCode);
+        if($shareCode === '' || !$this->userRecipeHasColumn('share_code')){
+            return null;
+        }
+        return UserRecipe::where(['id' => $id, 'status' => 'normal', 'share_code' => $shareCode])->find();
+    }
+
     /**
      * 我的配方列表
      */
     public function lists(){
         $fields = array_merge(
             ['id','user_id','name','recipe_data','total_weight','baking','last_order_money','order_count','createtime','updatetime'],
-            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags'])
+            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','share_code'])
         );
         $list = UserRecipe::where(['user_id' => $this->auth->id, 'status' => 'normal'])
             ->field(implode(',', $fields))
             ->order('updatetime desc,id desc')
             ->paginate()
             ->each(function ($item) {
-                $item = $this->formatRecipeForClient($item, false);
+                $item = $this->formatRecipeForClient($item, false, true);
                 $check = $this->checkRecipeOrderable($item['recipe_data']);
                 $item['can_order'] = $check['can_order'];
                 $item['invalid_items'] = $check['invalid_items'];
@@ -126,7 +188,7 @@ class Recipe extends Base{
         if($this->userRecipeHasColumn('public_status')){
             $fields = array_merge(
                 ['id','user_id','name','recipe_data','total_weight','baking','last_order_money','order_count','createtime','updatetime'],
-                $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at'])
+                $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at','share_code'])
             );
             $userRows = UserRecipe::where(['status' => 'normal'])
                 ->where('public_status', 'public')
@@ -187,7 +249,7 @@ class Recipe extends Base{
         }
         $fields = array_merge(
             ['id','user_id','name','recipe_data','total_weight','baking','last_order_money','order_count','createtime','updatetime'],
-            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at'])
+            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at','share_code'])
         );
         $query = UserRecipe::where(['status' => 'normal']);
         $query->where('public_status', 'public');
@@ -220,7 +282,7 @@ class Recipe extends Base{
         }
         $fields = array_merge(
             ['id','user_id','name','recipe_data','total_weight','baking','last_order_money','order_count','createtime','updatetime'],
-            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at'])
+            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at','share_code'])
         );
         $query = UserRecipe::where(['id' => $id, 'status' => 'normal']);
         $query->where('public_status', 'public');
@@ -243,10 +305,11 @@ class Recipe extends Base{
     public function wallDetail(){
         $sourceType = $this->normalizeSourceType($this->request->param('source_type', 'user'));
         $sourceId = (int)$this->request->param('source_id', $this->request->param('id'));
+        $shareCode = $this->normalizeShareCode($this->request->param('share_code', ''));
         if(!$sourceId){
             $this->error('配方不存在');
         }
-        $item = $this->getWallRecipeItem($sourceType, $sourceId);
+        $item = $this->getWallRecipeItem($sourceType, $sourceId, $shareCode);
         if(!$item){
             $this->error('配方不存在或不可访问');
         }
@@ -284,6 +347,7 @@ class Recipe extends Base{
         $id = (int)$this->request->post('id');
         $sourceType = $this->request->post('source_type', 'user');
         $sourceType = $sourceType === 'official' ? 'official' : 'user';
+        $shareCode = $this->normalizeShareCode($this->request->post('share_code', ''));
         if(!$id){
             $this->error();
         }
@@ -314,11 +378,9 @@ class Recipe extends Base{
                 'featured_at' => 0
             ];
         }else{
-            $query = UserRecipe::where(['id' => $id, 'status' => 'normal']);
-            $query->where('public_status', 'public');
-            $source = $query->find();
+            $source = $this->findAccessibleUserRecipe($id, $shareCode);
             if(!$source){
-                $this->error('配方不存在或未公开');
+                $this->error('配方不存在或不可访问');
             }
             $recipeData = json_decode($source['recipe_data'], true) ?: [];
             $check = $this->checkRecipeOrderable($recipeData);
@@ -358,6 +420,9 @@ class Recipe extends Base{
             if($this->userRecipeHasColumn($field)){
                 $data[$field] = $value;
             }
+        }
+        if($this->userRecipeHasColumn('share_code')){
+            $data['share_code'] = $this->generateShareCode();
         }
         $recipeId = UserRecipe::insertGetId($data);
         if($sourceType === 'user' && $this->userRecipeHasColumn('favorite_count')){
@@ -412,10 +477,11 @@ class Recipe extends Base{
     public function share(){
         $sourceType = $this->normalizeSourceType($this->request->post('source_type', 'user'));
         $sourceId = (int)$this->request->post('source_id', $this->request->post('id'));
+        $shareCode = $this->normalizeShareCode($this->request->post('share_code', ''));
         if(!$sourceId){
             $this->error('配方不存在');
         }
-        if(!$this->getWallRecipeItem($sourceType, $sourceId)){
+        if(!$this->getWallRecipeItem($sourceType, $sourceId, $shareCode)){
             $this->error('配方不存在或不可访问');
         }
         $count = $this->incrementInteraction($sourceType, $sourceId, 'share_count');
@@ -624,6 +690,9 @@ class Recipe extends Base{
             $recipe_id = $recipe['id'];
         }else{
             $data['createtime'] = time();
+            if($this->userRecipeHasColumn('share_code')){
+                $data['share_code'] = $this->generateShareCode();
+            }
             $recipe_id = UserRecipe::insertGetId($data);
         }
         $this->success('保存成功', ['id' => $recipe_id]);
@@ -679,7 +748,7 @@ class Recipe extends Base{
         $this->success('删除成功');
     }
 
-    protected function getWallRecipeItem($sourceType, $sourceId)
+    protected function getWallRecipeItem($sourceType, $sourceId, $shareCode = '')
     {
         $sourceType = $this->normalizeSourceType($sourceType);
         $sourceId = (int)$sourceId;
@@ -692,16 +761,27 @@ class Recipe extends Base{
         }
         $fields = array_merge(
             ['id','user_id','name','recipe_data','total_weight','baking','last_order_money','order_count','createtime','updatetime'],
-            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at'])
+            $this->userRecipeFields(['author_name','author_title','scene_tags','flavor_tags','description','public_status','is_featured','copy_count','favorite_count','feedback_count','feedback_tags','featured_at','share_code'])
         );
         $row = UserRecipe::where(['id' => $sourceId, 'status' => 'normal'])
             ->where('public_status', 'public')
             ->field(implode(',', $fields))
             ->find();
+        $isPrivateShare = false;
+        if(!$row){
+            $shareCode = $this->normalizeShareCode($shareCode);
+            if($shareCode !== '' && $this->userRecipeHasColumn('share_code')){
+                $row = UserRecipe::where(['id' => $sourceId, 'status' => 'normal', 'share_code' => $shareCode])
+                    ->field(implode(',', $fields))
+                    ->find();
+                $isPrivateShare = !!$row && (!isset($row['public_status']) || $row['public_status'] !== 'public');
+            }
+        }
         if(!$row){
             return null;
         }
-        $item = $this->formatRecipeForClient($row, true);
+        $item = $this->formatRecipeForClient($row, !$isPrivateShare, $isPrivateShare);
+        $item['private_shared'] = $isPrivateShare ? 1 : 0;
         $check = $this->checkRecipeOrderable($item['recipe_data']);
         $item['can_order'] = $check['can_order'];
         $item['invalid_items'] = $check['invalid_items'];
@@ -897,8 +977,11 @@ class Recipe extends Base{
         return ['can_order' => count($invalidItems) == 0, 'invalid_items' => $invalidItems];
     }
 
-    protected function formatRecipeForClient($item, $public = false)
+    protected function formatRecipeForClient($item, $public = false, $includeShareCode = false)
     {
+        if($includeShareCode){
+            $this->ensureRecipeShareCode($item);
+        }
         $item['recipe_data'] = json_decode($item['recipe_data'], true) ?: [];
         $item['createtime_text'] = isset($item['createtime']) ? format($item['createtime']) : '';
         $item['updatetime_text'] = isset($item['updatetime']) ? format($item['updatetime']) : '';
@@ -920,6 +1003,11 @@ class Recipe extends Base{
         $item['wall_key'] = 'user_' . $item['id'];
         $item['is_featured'] = isset($item['is_featured']) ? (int)$item['is_featured'] : 0;
         $item['public_status'] = isset($item['public_status']) ? $item['public_status'] : 'private';
+        if($includeShareCode){
+            $item['share_code'] = isset($item['share_code']) ? $item['share_code'] : '';
+        }else{
+            unset($item['share_code']);
+        }
         if($public){
             $user = User::where('id', $item['user_id'])->field('nickname')->find();
             $fallbackName = $user && $user['nickname'] ? $user['nickname'] : ('拼豆师NO.' . $item['user_id']);
