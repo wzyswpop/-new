@@ -23,6 +23,7 @@ return [
     'Favorite_count' => '保存次数',
     'Feedback_count' => '反馈次数',
     'Order_count' => '下单次数',
+    'Metrics' => '数据',
     'Last_order_money' => '最近金额',
     'Featured_at' => '精选时间',
     'Status' => '状态',

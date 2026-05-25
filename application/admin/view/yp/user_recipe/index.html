@@ -1,4 +1,15 @@
-<div class="panel panel-default panel-intro">
+<style>
+    .hc-wall-admin .panel-heading { padding-bottom: 0; }
+    .hc-wall-admin .nav-tabs { border-bottom: 0; margin-top: 8px; }
+    .hc-wall-admin .nav-tabs > li > a { padding: 8px 14px; }
+    .hc-wall-admin .toolbar { padding: 8px; }
+    .hc-wall-admin .toolbar .btn { margin-right: 6px; }
+    .hc-wall-admin .table td { vertical-align: middle !important; }
+    .hc-wall-metrics { color: #555; white-space: nowrap; }
+    .hc-wall-metrics .muted { color: #999; margin-left: 8px; }
+    .hc-wall-metrics .muted:first-child { margin-left: 0; }
+</style>
+<div class="panel panel-default panel-intro hc-wall-admin">
     <div class="panel-heading">
         {:build_heading(null,FALSE)}
         <ul class="nav nav-tabs" data-field="is_featured">
