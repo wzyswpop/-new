@@ -495,6 +495,150 @@
         margin-top: 0;
     }
 
+    .bean-edit-tabs {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        margin: -20px -10px 24px -5px;
+        padding: 16px 24px 0;
+        background: #fff;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .bean-edit-tabs .el-tabs__nav-wrap::after {
+        height: 0;
+    }
+
+    .bean-edit-tabs .el-tabs__content {
+        display: none;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .bean-edit-tabs .el-tabs__item {
+        height: 40px;
+        line-height: 40px;
+        color: #667085;
+        font-weight: 600;
+    }
+
+    .bean-edit-tabs .el-tabs__item.is-active {
+        color: #2563eb;
+    }
+
+    .bean-edit-section {
+        max-width: 980px;
+        margin: 0 auto 24px;
+        padding: 24px;
+        border: 1px solid #e4e7ec;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .bean-section-title {
+        margin-bottom: 20px;
+        color: #101828;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .bean-channel-switches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .bean-taste-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 8px 24px;
+        max-width: 680px;
+    }
+
+    .bean-taste-grid span {
+        display: block;
+        color: #667085;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .role-judge-panel {
+        width: 100%;
+        margin-top: 12px;
+        padding: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background: #fafafa;
+    }
+
+    .role-judge-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .role-judge-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .role-judge-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .role-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: #eef2ff;
+        color: #3730a3;
+        font-size: 12px;
+    }
+
+    .role-pill-muted {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .role-score-row {
+        display: grid;
+        grid-template-columns: 54px 1fr 34px;
+        align-items: center;
+        gap: 8px;
+        margin: 7px 0;
+        font-size: 12px;
+        color: #4b5563;
+    }
+
+    .role-score-track {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e5e7eb;
+    }
+
+    .role-score-bar {
+        height: 100%;
+        border-radius: 999px;
+        background: #7c6f64;
+    }
+
+    .role-judge-reason {
+        margin-top: 10px;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 20px;
+    }
+
     .sku-store-take-switch {
         margin-left: 20px;
         display: flex;
@@ -516,8 +660,34 @@
 <div id="goodsDetail" class="open-page-container common-container-scrollbar" v-cloak>
     <div class="preview-body">
         <div class="good-detail-body common-container-scrollbar">
-            <el-form :model="goodsDetail" :rules="rules" ref="goodsDetail" label-width="110px">
-                <el-form-item label="商品分类：" prop="category_id">
+            <div class="bean-edit-hero">
+                <div>
+                    <div class="bean-edit-kicker">咖啡豆资料</div>
+                    <div class="bean-edit-title">新增咖啡豆</div>
+                    <div class="bean-edit-desc">先维护基础资料，再按实际业务开启商城成品或定制豆池。</div>
+                </div>
+                <div class="bean-status-summary">
+                    <span :class="['bean-status-chip', goodsDetail.is_shop_sale == 1 ? 'is-on' : '']">商城成品</span>
+                    <span :class="['bean-status-chip', goodsDetail.is_customized == 1 ? 'is-on' : '']">定制豆池</span>
+                    <span :class="['bean-status-chip', goodsDetail.is_stock == 1 ? 'is-on' : '']">多规格</span>
+                </div>
+            </div>
+            <el-form :model="goodsDetail" :rules="rules" ref="goodsDetail" label-width="110px" class="bean-edit-form">
+                <el-tabs v-model="activeEditTab" class="bean-edit-tabs">
+                    <el-tab-pane label="基础信息" name="base"></el-tab-pane>
+                    <el-tab-pane label="商城销售" name="shop"></el-tab-pane>
+                    <el-tab-pane label="定制拼配" name="custom"></el-tab-pane>
+                    <el-tab-pane label="库存与成本" name="stock"></el-tab-pane>
+                    <el-tab-pane label="展示内容" name="content"></el-tab-pane>
+                </el-tabs>
+                <div class="bean-edit-section" v-show="activeEditTab === 'base'">
+                    <div class="bean-section-head">
+                        <div>
+                            <div class="bean-section-title">基础信息</div>
+                            <div class="bean-section-desc">这些字段用于商城列表、商品详情和定制选豆，尽量保持名称、产区和风味表达统一。</div>
+                        </div>
+                    </div>
+                <el-form-item label="产区分类：" prop="category_id">
                     <el-cascader :options="categoryOptions" v-model="goodsDetail.category_ids_arr" :show-all-levels="false" @change="panelChange"></el-cascader>
                 </el-form-item>
                 <el-form-item label="商品标题：" prop="name">
@@ -525,6 +695,13 @@
                 </el-form-item>
                 <el-form-item label="商品副标题：" prop="desc">
                     <el-input type="input" v-model="goodsDetail.desc" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="业务用途：">
+                    <div class="bean-channel-switches">
+                        <el-switch v-model="goodsDetail.is_shop_sale" :active-value="1" :inactive-value="0" active-text="商城出售"></el-switch>
+                        <el-switch v-model="goodsDetail.is_customized" :active-value="1" :inactive-value="0" active-text="定制可选"></el-switch>
+                    </div>
+                    <div class="form-tip-message" style="margin-left: 0;">一支咖啡豆只建一条基础记录，可同时用于商城与定制豆池。</div>
                 </el-form-item>
                 <el-form-item label="产区：" prop="product_area">
                     <el-input type="input" v-model="goodsDetail.product_area" size="small"></el-input>
@@ -547,7 +724,10 @@
                 <el-form-item label="规格：" prop="specs">
                     <el-input type="input" v-model="goodsDetail.specs" size="small"></el-input>
                 </el-form-item>
-                <el-form-item label="烘培度：" prop="baking">
+                <el-form-item label="AG值：" prop="ag">
+                    <el-input type="input" v-model="goodsDetail.ag" size="small"></el-input>
+                </el-form-item>
+                <el-form-item label="烘焙度：" prop="baking">
                     <el-input type="input" v-model="goodsDetail.baking" size="small"></el-input>
                 </el-form-item>
                 <el-form-item label="商品主图：" prop="image">
@@ -593,22 +773,32 @@
                              v-if="!goodsDetail.images_arr || goodsDetail.images_arr.length<9">
                             <i class="el-icon-plus"></i>
                         </div>
-                        <div class="form-tip-message" style="margin-left: 0;">作用于商品详情顶部轮播;建议 750*750 像素</div>
+                        <div class="form-tip-message" style="margin-left: 0;">商城商品详情顶部轮播；仅定制渠道可不传；建议 750*750 像素</div>
                     </div>
                 </el-form-item>
-                <el-form-item label="商品状态：" prop="status">
-                    <el-radio-group v-model="goodsDetail.status">
-                        <el-radio :label="1">上架</el-radio>
-                        <el-radio :label="0">隐藏</el-radio>
-                    </el-radio-group>
+                </div>
+                <div class="bean-edit-section" v-show="activeEditTab === 'shop'">
+                    <div class="bean-section-head">
+                        <div>
+                            <div class="bean-section-title">商城销售</div>
+                            <div class="bean-section-desc">商城价格面向客人展示；是否进入商城由基础信息里的业务用途统一控制。</div>
+                        </div>
+                    </div>
+                <el-form-item label="商城渠道：">
+                    <el-tag v-if="goodsDetail.is_shop_sale == 1" type="success">已开启商城出售</el-tag>
+                    <el-tag v-else type="info">未开启商城出售</el-tag>
+                    <div class="form-tip-message" style="margin-left: 0;">如需调整，请回到“基础信息”的业务用途开关。</div>
+                </el-form-item>
+                <el-form-item label="商城展示名：" prop="shop_name">
+                    <el-input type="input" v-model="goodsDetail.shop_name" placeholder="留空则使用商品标题" size="small"></el-input>
                 </el-form-item>
                 <el-form-item label="是否热销：" prop="is_hot">
                     <el-radio-group v-model="goodsDetail.is_hot">
                         <el-radio :label="1">是</el-radio>
-                        <el-radio :label="0">否</el-radio>
+                        <el-radio :label="2">否</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="是否是定制商品：" prop="classify">
+                <el-form-item label="豆子类型：" prop="classify">
                     <el-radio-group v-model="goodsDetail.classify">
                         <el-radio :label="1">意式</el-radio>
                         <el-radio :label="2">单品</el-radio>
@@ -616,12 +806,91 @@
                         <el-radio :label="4">其他</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="是否是定制商品：" prop="is_customized">
-                    <el-radio-group v-model="goodsDetail.is_customized">
-                        <el-radio :label="0">否</el-radio>
-                        <el-radio :label="1">是</el-radio>
-                    </el-radio-group>
+                </div>
+                <div class="bean-edit-section" v-show="activeEditTab === 'custom'">
+                    <div class="bean-section-head">
+                        <div>
+                            <div class="bean-section-title">定制拼配</div>
+                            <div class="bean-section-desc">这里维护定制订单使用的豆池信息和定制价格，独立于商城成品价格。</div>
+                        </div>
+                    </div>
+			                <el-form-item label="风味维度：">
+	                    <div class="bean-taste-grid">
+	                        <div><span>酸</span><el-slider v-model="goodsDetail.taste_acidity" :max="10"></el-slider></div>
+	                        <div><span>甜</span><el-slider v-model="goodsDetail.taste_sweetness" :max="10"></el-slider></div>
+	                        <div><span>香气</span><el-slider v-model="goodsDetail.taste_aroma" :max="10"></el-slider></div>
+	                        <div><span>醇厚</span><el-slider v-model="goodsDetail.taste_body" :max="10"></el-slider></div>
+	                        <div><span>余韵</span><el-slider v-model="goodsDetail.taste_aftertaste" :max="10"></el-slider></div>
+	                    </div>
+	                    <div class="form-tip-message" style="margin-left: 0;">风味维度会参与自动判定，建议先调整这里再生成配方定位。</div>
+	                </el-form-item>
+	                <el-form-item label="配方定位：">
+	                    <div class="display-flex" style="align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+	                        <el-select v-model="goodsDetail.formula_primary_position" placeholder="主定位" size="small" style="width: 180px;">
+                            <el-option v-for="item in formulaPositionOptions" :key="item.value" :label="'主定位：' + item.label" :value="item.value"></el-option>
+                        </el-select>
+                        <el-select v-model="goodsDetail.formula_secondary_positions" multiple collapse-tags placeholder="辅助定位" size="small" style="width: 300px;">
+                            <el-option v-for="item in formulaPositionOptions" :key="item.value" :label="item.label" :value="item.value" :disabled="item.value === goodsDetail.formula_primary_position"></el-option>
+                        </el-select>
+	                        <el-select v-model="goodsDetail.formula_strength" placeholder="推荐度" size="small" style="width: 130px;">
+	                            <el-option label="推荐度：低" value="low"></el-option>
+	                            <el-option label="推荐度：中" value="medium"></el-option>
+	                            <el-option label="推荐度：高" value="high"></el-option>
+	                        </el-select>
+	                        <el-button type="primary" size="small" @click="runRoleJudge">自动判定</el-button>
+		                        <el-button size="small" @click="applyRoleJudge">采用系统判定</el-button>
+		                        <el-button size="small" @click="confirmRoleJudge">{{ goodsDetail.formula_confirmed ? '已人工确认' : '确认当前设置' }}</el-button>
+	                    </div>
+	                    <div class="form-tip-message" style="margin-left: 0;">主定位用于组方优先选择；辅助定位用于豆子不足或需要复合定位时补位。</div>
+	                    <div class="role-judge-panel" v-if="roleJudgeResult || goodsDetail.formula_role_scores">
+	                        <div class="role-judge-head">
+	                            <div class="role-judge-title">系统判定结果</div>
+	                            <el-tag size="mini" :type="goodsDetail.formula_confirmed ? 'success' : 'info'">{{ goodsDetail.formula_confirmed ? '人工已确认' : '待确认' }}</el-tag>
+	                        </div>
+		                        <div class="role-judge-meta">
+		                            <span class="role-pill">主定位：{{ roleLabel((roleJudgeResult && roleJudgeResult.primary) || goodsDetail.formula_primary_position) }}</span>
+		                            <span class="role-pill" :class="goodsDetail.formula_strong_process ? '' : 'role-pill-muted'">处理法判定：{{ goodsDetail.formula_strong_process ? '强处理' : '传统处理' }}</span>
+		                            <span class="role-pill role-pill-muted" v-if="roleJudgeResult && roleJudgeResult.confidence">置信度：{{ roleJudgeResult.confidence }}%</span>
+		                            <span class="role-pill role-pill-muted" v-if="goodsDetail.formula_recommended_ratio">推荐占比：{{ goodsDetail.formula_recommended_ratio }}</span>
+		                            <span class="role-pill role-pill-muted" v-for="role in goodsDetail.formula_secondary_positions" :key="role">副定位：{{ roleLabel(role) }}</span>
+	                        </div>
+	                        <div v-for="item in formulaPositionOptions" :key="item.value" class="role-score-row">
+	                            <span>{{ item.label }}</span>
+	                            <div class="role-score-track"><div class="role-score-bar" :style="{ width: roleScorePercent(goodsDetail.formula_role_scores[item.value]) + '%' }"></div></div>
+	                            <span>{{ goodsDetail.formula_role_scores[item.value] || 0 }}</span>
+	                        </div>
+	                        <div class="role-judge-reason" v-if="goodsDetail.formula_role_reason">{{ goodsDetail.formula_role_reason }}</div>
+	                    </div>
+	                </el-form-item>
+	                <el-form-item label="旧角色：" prop="blend_role" v-show="false">
+                    <el-select v-model="goodsDetail.blend_role" placeholder="请选择" size="small">
+                        <el-option label="基底豆" value="base"></el-option>
+                        <el-option label="风味豆" value="flavour"></el-option>
+                        <el-option label="平衡豆" value="balance"></el-option>
+                        <el-option label="点缀豆" value="accent"></el-option>
+                    </el-select>
                 </el-form-item>
+	                <el-form-item label="默认比例：" prop="recommend_ratio">
+                    <el-input-number v-model="goodsDetail.recommend_ratio" :min="0" :max="100" size="small"></el-input-number>
+                    <span class="form-tip-message">可选；为空时系统按配方结构自动分配。</span>
+                </el-form-item>
+                <el-form-item label="推荐方式：">
+                    <div class="bean-channel-switches">
+                        <el-switch v-model="goodsDetail.allow_ai_recommend" :active-value="1" :inactive-value="0" active-text="允许 AI 推荐"></el-switch>
+                        <el-switch v-model="goodsDetail.allow_manual_select" :active-value="1" :inactive-value="0" active-text="允许用户手动选择"></el-switch>
+                    </div>
+                </el-form-item>
+                <el-form-item label="定制价格：" prop="customized_price" v-if="goodsDetail.is_customized==1">
+                    <div class="display-flex">
+                        <el-input type="text" v-model="goodsDetail.customized_price" style="width:300px" size="small">
+                            <template slot="append">元 / kg</template>
+                        </el-input>
+                        <div class="form-tip-message">用于单品定制和拼配定制的重量计价。</div>
+                    </div>
+                </el-form-item>
+                </div>
+                <div class="bean-edit-section" v-show="activeEditTab === 'shop'">
+                    <div class="bean-section-title">商城运营</div>
                 <el-form-item label="商品权重：" prop="weigh">
                     <el-input type="input" v-model="goodsDetail.weigh" size="small"></el-input>
                     <div class="form-tip-message" style="margin-left: 0;">权重越大越靠前</div>
@@ -639,21 +908,15 @@
                     </div>
                 </el-form-item>
                 <div>
-                    <div class="goods-part-title goods-part-title-first">商品价格</div>
+                    <div class="goods-part-title goods-part-title-first">商城价格</div>
 
                     <el-form-item label="商品规格：" prop="is_stock">
                         <div class="display-flex">
-                            <el-radio-group v-model="goodsDetail.is_stock">
+                            <el-radio-group v-model="goodsDetail.is_stock" @change="changeStockMode">
                                 <el-radio :label="0">单规格</el-radio>
                                 <el-radio :label="1">多规格</el-radio>
                             </el-radio-group>
-                        </div>
-                    </el-form-item>
-                    <el-form-item label="定制价格（每千克）：" prop="customized_price" v-if="goodsDetail.is_stock==1">
-                        <div class="display-flex">
-                            <el-input type="text" v-model="goodsDetail.customized_price" style="width:300px" size="small">
-                            </el-input>
-                            <div class="form-tip-message">非定制商品填写0即可</div>
+                            <div class="form-tip-message">成品咖啡豆需要不同净含量、烘焙度、价格时请选择多规格。</div>
                         </div>
                     </el-form-item>
                     <el-form-item label="售卖价格：" prop="money" v-if="goodsDetail.is_stock==1">
@@ -661,6 +924,13 @@
                             <el-input type="text" v-model="goodsDetail.money" style="width:300px" size="small">
                             </el-input>
                             <div class="form-tip-message">多规格仅做展示</div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="规格价格：" v-if="goodsDetail.is_stock==1">
+                        <div class="display-flex">
+                            <el-button type="primary" size="small" @click="activeEditTab = 'stock'">设置规格价格</el-button>
+                            <el-button size="small" @click="useFinishedBeanSkuTemplate">成品豆模板</el-button>
+                            <div class="form-tip-message">在规格矩阵中设置每个净含量、烘焙度对应的价格。</div>
                         </div>
                     </el-form-item>
                     <el-form-item label="售卖价格：" prop="money" v-if="goodsDetail.is_stock==0">
@@ -678,10 +948,18 @@
 
                 </div>
 
-                <div>
-                    <div class="goods-part-title">商品规格</div>
+                </div>
+
+                <div class="bean-edit-section" v-show="activeEditTab === 'stock'">
+                    <div class="bean-section-head">
+                        <div>
+                            <div class="bean-section-title">库存与成本</div>
+                            <div class="bean-section-desc">单规格直接填库存；多规格按净含量和烘焙度逐行维护价格、库存、净含量和编码。</div>
+                        </div>
+                    </div>
+                    <div class="goods-part-title">库存规格</div>
                     <div v-if="goodsDetail.is_stock==0">
-                        <el-form-item label="商品重量：">
+                        <el-form-item label="净含量(g)：">
                             <div class="display-flex">
                                 <el-input type="input" v-model="goodsDetail.weight" style="width:300px"
                                           size="small">
@@ -740,6 +1018,11 @@
                                     <i class="el-icon-plus"></i>
                                     <span>添加规格</span>
                                 </div>
+                                <div class="btn-common add-level1-sku" style="width: 138px; margin-left: 12px;" @click="useFinishedBeanSkuTemplate">
+                                    <i class="el-icon-magic-stick"></i>
+                                    <span>成品豆模板</span>
+                                </div>
+                                <div class="form-tip-message">模板会生成“净含量”和“烘焙度”两组规格，下面矩阵逐行填写价格、库存、净含量和编码。</div>
                             </div>
                         </div>
                         <div class="table-box" v-show="skuPrice.length && skuList.length">
@@ -787,7 +1070,7 @@
                                         </el-popover>
                                     </div>
                                     <div class="sku-weight display-flex">
-                                        <span>重量</span>
+                                        <span>净含量(g)</span>
                                         <el-popover placement="top" width="160" v-model="allEditPopover.weight">
                                             <el-input v-model="allEditDatas" placeholder="请输入内容" size="small">
                                             </el-input>
@@ -877,6 +1160,13 @@
                         </div>
                     </div>
                 </div>
+                <div class="bean-edit-section" v-show="activeEditTab === 'content'">
+                    <div class="bean-section-head">
+                        <div>
+                            <div class="bean-section-title">展示内容</div>
+                            <div class="bean-section-desc">用于商城详情页的图文内容，定制选豆主要读取基础资料和风味字段。</div>
+                        </div>
+                    </div>
                 <form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
                     <div class="display-flex editor-container">
                         <label class="control-label">{:__('Content')}:</label>
@@ -886,10 +1176,12 @@
                         </div>
                     </div>
                 </form>
+                </div>
             </el-form>
         </div>
     </div>
     <div class="open-page-button-container">
-        <div class="dialog-button dialog-button-define" @click="submitForm('goodsDetail')">确定</div>
+        <div class="dialog-button dialog-button-ghost" @click="Fast.api.close()">取消</div>
+        <div class="dialog-button dialog-button-define" @click="submitForm('goodsDetail')">保存咖啡豆</div>
     </div>
 </div>

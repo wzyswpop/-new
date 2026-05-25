@@ -1,5 +1,40 @@
 define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefined, Backend, Table, Form) {
 
+    function showTransferError(xhr) {
+        var msg = '操作失败';
+        if (xhr) {
+            var response = xhr.responseJSON || {};
+            msg = response.msg || xhr.responseText || xhr.statusText || msg;
+            if (xhr.status) {
+                msg = 'HTTP ' + xhr.status + '：' + msg;
+            }
+        }
+        Layer.alert(msg);
+    }
+
+    function transferAjax(url, data, success) {
+        var index = Layer.load(0);
+        $.ajax({
+            url: Fast.api.fixurl(url),
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function (ret) {
+                Layer.close(index);
+                if (ret && ret.code == 1) {
+                    success && success(ret);
+                    Toastr.success(ret.msg || '操作成功');
+                    return;
+                }
+                Layer.alert((ret && ret.msg) || '操作失败，请查看后台日志');
+            },
+            error: function (xhr) {
+                Layer.close(index);
+                showTransferError(xhr);
+            }
+        });
+    }
+
     var Controller = {
         index: function () {
             // 初始化表格参数配置
@@ -37,6 +72,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'amount_received', title: __('Amount_received'), operate:false},
                         {field: 'type', title: __('提现类型'), searchList: {"1":__('佣金'),"2":__('余额')}, formatter: Table.api.formatter.status},
                         {field: 'status', title: __('Status'), searchList: {"1":__('Status 1'),"2":__('Status 2'),"3":__('Status 3')}, formatter: Table.api.formatter.status},
+                        {field: 'transfer_state', title: __('微信状态'), operate:false},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
                             buttons: [
@@ -50,6 +86,37 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                     },
                                     visible: function (row) {
                                         return true;
+                                    }
+                                },
+                                {
+                                    name: '查询转账',
+                                    text: __('查转账'),
+                                    classname: 'btn btn-xs btn-info btn-click',
+                                    click: function (e, row) {
+                                        transferAjax('yp/withdrawal/query_transfer', {ids: row.id}, function () {
+                                            $(".btn-refresh").trigger("click");
+                                        });
+                                        return false;
+                                    },
+                                    visible:function(row){
+                                        return row.status == 2 && row.out_detail_no;
+                                    }
+                                },
+                                {
+                                    name: '重新发起转账',
+                                    text: __('重发转账'),
+                                    classname: 'btn btn-xs btn-warning btn-click',
+                                    click: function (e, row) {
+                                        Layer.confirm('仅在微信商户平台查不到该转账单时使用，确认重新发起微信转账？', function (index) {
+                                            transferAjax('yp/withdrawal/retry_transfer', {ids: row.id}, function () {
+                                                Layer.close(index);
+                                                $(".btn-refresh").trigger("click");
+                                            });
+                                        });
+                                        return false;
+                                    },
+                                    visible:function(row){
+                                        return row.status == 2;
                                     }
                                 },
                                 {

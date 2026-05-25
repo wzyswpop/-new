@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'Id' => 'ID',
+    'User_id' => '用户',
+    'User.nickname' => '用户昵称',
+    'Name' => '配方名称',
+    'Bean_summary' => '配方豆种',
+    'Total_weight' => '常用重量',
+    'Baking' => '烘焙度',
+    'Description' => '配方简介',
+    'Scene_tags' => '场景标签',
+    'Flavor_tags' => '风味标签',
+    'Author_name' => '公开作者名',
+    'Author_title' => '作者称号',
+    'Public_status' => '公开状态',
+    'Public_status private' => '私有',
+    'Public_status public' => '公开',
+    'Is_featured' => '精选',
+    'Is_featured 0' => '未精选',
+    'Is_featured 1' => '精选',
+    'Copy_count' => '复刻次数',
+    'Favorite_count' => '保存次数',
+    'Feedback_count' => '反馈次数',
+    'Order_count' => '下单次数',
+    'Last_order_money' => '最近金额',
+    'Featured_at' => '精选时间',
+    'Status' => '状态',
+    'Status normal' => '正常',
+    'Status hidden' => '下架',
+    'Createtime' => '创建时间',
+    'Updatetime' => '更新时间'
+];

@@ -23,7 +23,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     trigger: 'axis'
                 },
                 legend: {
-                    data: [__('Register user')]
+                    data: ['支付订单', '销售额', __('Register user')]
                 },
                 toolbox: {
                     show: false,
@@ -37,27 +37,53 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     boundaryGap: false,
                     data: Config.column
                 },
-                yAxis: {},
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '订单/会员'
+                    },
+                    {
+                        type: 'value',
+                        name: '销售额'
+                    }
+                ],
                 grid: [{
                     left: 'left',
                     top: 'top',
-                    right: '10',
+                    right: '30',
                     bottom: 30
                 }],
-                series: [{
-                    name: __('Register user'),
-                    type: 'line',
-                    smooth: true,
-                    areaStyle: {
-                        normal: {}
+                series: [
+                    {
+                        name: '支付订单',
+                        type: 'line',
+                        smooth: true,
+                        lineStyle: {
+                            normal: {
+                                width: 2
+                            }
+                        },
+                        data: Config.orderdata
                     },
-                    lineStyle: {
-                        normal: {
-                            width: 1.5
-                        }
+                    {
+                        name: '销售额',
+                        type: 'bar',
+                        yAxisIndex: 1,
+                        barMaxWidth: 28,
+                        data: Config.moneydata
                     },
-                    data: Config.userdata
-                }]
+                    {
+                        name: __('Register user'),
+                        type: 'line',
+                        smooth: true,
+                        lineStyle: {
+                            normal: {
+                                width: 1.5
+                            }
+                        },
+                        data: Config.userdata
+                    }
+                ]
             };
 
             // 使用刚指定的配置项和数据显示图表。

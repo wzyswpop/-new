@@ -28,7 +28,7 @@ class Withdrawal extends Base {
         if($type && in_array($type,[1,2,3])){
             $model->where(['status' => $type]);
         }
-        $list = $model->field('bank_name,card_id,name,money,service_charge,amount_received,createtime,memo,type')
+        $list = $model->field('id,bank_name,card_id,name,money,service_charge,amount_received,createtime,memo,type,status,transfer_state,transfer_fail_reason')
             ->paginate()
             ->each(function ($key){
                 $key->append(['type_text']);
@@ -44,6 +44,7 @@ class Withdrawal extends Base {
     public function moneyLog(){
         $type = $this->request->param('type');
         $model = MoneyLog::where(['user_id' => $this->auth->id])
+            ->where(['classify' => 'money'])
             ->order('createtime desc');
         if($type && in_array($type,['sub','add'])){
             $model->where(['type' => $type]);
@@ -56,9 +57,10 @@ class Withdrawal extends Base {
                 return $key;
             });
         $money = $this->auth->money;
+        $commission = $this->auth->commission;
         $avatar = $this->auth->avatar;
         $nickname = $this->auth->nickname;
-        $this->success('成功',compact('money','list','avatar','nickname'));
+        $this->success('成功',compact('money','commission','list','avatar','nickname'));
     }
     public function moneyList()
     {
@@ -68,18 +70,21 @@ class Withdrawal extends Base {
            if($type == 'recharge'){
                $andwhere['change_type'] = 'recharge';
            }elseif($type == 'pay'){
-               $andwhere = ['change_type'=>['<>','recharge']];
+               $andwhere = ['type' => 'sub'];
            }
         }
-        $list = MoneyLog::where(['user_id'=>$this->auth->id])->where($andwhere)->order('id desc')->paginate(200);
-        $new_list = $this->groupList($list);
-        $per_page = 200;
-        $total = MoneyLog::where(['user_id'=>$this->auth->id])->count();
-        $current_page = $this->request->param('page')?$this->request->param('page'):1;
-        $last_page = ceil($total/200);
+        $list = MoneyLog::where(['user_id'=>$this->auth->id,'classify' => 'money'])->where($andwhere)->order('id desc')->paginate(2000000);
+        $lists = $this->groupList($list);
+        $new_list = [];
+        foreach ($lists as $k=>$v){
+            $v['date'] = $k;
+            array_push($new_list,$v);
+        }
         $avatar = $this->auth->avatar;
         $nickname = $this->auth->nickname;
-        $this->success('ok', compact('per_page','total','current_page','last_page','new_list','avatar','nickname'));
+        $money = $this->auth->money;
+        $commission = $this->auth->commission;
+        $this->success('ok', compact('new_list','avatar','nickname','money','commission'));
     }
     public function groupList($list)
     {
@@ -95,12 +100,11 @@ class Withdrawal extends Base {
             if(!isset($new_list[$date]['sub'])){
                 $new_list[$date]['sub'] = 0;
             }
-            if($v['change_type'] == 'recharge'){
+            if($v['type'] == 'add'){
                 $new_list[$date]['add']=  $new_list[$date]['add'] + $v['num'];
             }else{
                 $new_list[$date]['sub']=  $new_list[$date]['sub'] + $v['num'];
             }
-
         }
         return $new_list;
     }
@@ -140,7 +144,8 @@ class Withdrawal extends Base {
         $money = $this->auth->integral;
         $avatar = $this->auth->avatar;
         $nickname = $this->auth->nickname;
-        $this->success('成功',compact('money','list','avatar','nickname'));
+        $integral = $this->auth->integral;
+        $this->success('成功',compact('money','list','avatar','nickname','integral'));
     }
     public function integralList()
     {
@@ -153,15 +158,18 @@ class Withdrawal extends Base {
                 $andwhere = ['type'=>'sub'];
             }
         }
-        $list = IntegralLog::where(['user_id'=>$this->auth->id])->where($andwhere)->order('id desc')->paginate(200);
-        $new_list = $this->integralGroupList($list);
-        $per_page = 200;
-        $total = IntegralLog::where(['user_id'=>$this->auth->id])->count();
-        $current_page = $this->request->param('page')?$this->request->param('page'):1;
-        $last_page = ceil($total/200);
+        $list = IntegralLog::where(['user_id'=>$this->auth->id])->where($andwhere)->order('id desc')->paginate(2000000);
+        $lists = $this->integralGroupList($list);
+        $new_list = [];
+        foreach ($lists as $k=>$v){
+            $v['date'] = $k;
+            array_push($new_list,$v);
+        }
+
+
         $avatar = $this->auth->avatar;
         $nickname = $this->auth->nickname;
-        $this->success('ok', compact('per_page','total','current_page','last_page','new_list','avatar','nickname'));
+        $this->success('ok', compact('new_list','avatar','nickname'));
     }
 
 
@@ -188,7 +196,7 @@ class Withdrawal extends Base {
      */
     public function applyWithdrawal(){
         $money = $this->request->param('money');
-        $type = 2;
+        $type = 1;
         if(!$type || !in_array($type,[1,2])){
             $this->error();
         }
@@ -198,16 +206,10 @@ class Withdrawal extends Base {
         }
         $withdrawal_service = getValues('withdrawal_service');
         $user_info = User::where(['id' => $this->auth->id])->lock(true)->find();
-        if($type == 1){  //佣金
-            if($user_info['commission'] <= 0 || $user_info['commission'] < $money){
-                $this->error('余额不足');
-            }
-        }else{           //余额
-            if($user_info['money'] <= 0  || $user_info['money'] < $money){
-                $this->error('余额不足');
-            }
+        if($user_info['commission'] <= 0 || $user_info['commission'] < $money){
+            $this->error('可提现佣金不足');
         }
-        if($withdrawal_service > 0 && $type == 1){
+        if($withdrawal_service > 0){
             $service_charge = bcmul($money,bcdiv($withdrawal_service,100,2),2);
         }else{
             $service_charge = 0;
@@ -221,11 +223,7 @@ class Withdrawal extends Base {
                 'memo' => '提现申请',
                 'change_type' => 'withdrawal'
             ];
-            if($type == 1){
-                $res = User::changeCommission($money_log);
-            }else{
-                $res = User::changeMoney($money_log);
-            }
+            $res = User::changeCommissionWithdrawal($money_log);
             if($res !== true){
                 throw new Exception('');
             }
@@ -235,6 +233,7 @@ class Withdrawal extends Base {
                 'service_charge' => $service_charge,
                 'amount_received' => bcsub($money,$service_charge,2),
                 'createtime' => time(),
+                'out_batch_no' => order_no(),
                 'type' => $type
             ];
             $this->model->insert($withdrawal_data);
@@ -244,5 +243,39 @@ class Withdrawal extends Base {
             $this->error($e->getMessage());
         }
         $this->success();
+    }
+
+    public function merchantTransferPackage()
+    {
+        $info = $this->model->where([
+                'user_id' => $this->auth->id,
+                'status' => 2,
+                'transfer_state' => 'WAIT_USER_CONFIRM',
+            ])
+            ->where('package_info', '<>', '')
+            ->order('handletime desc,id desc')
+            ->find();
+        if (!$info) {
+            $this->success('暂无待确认转账', null);
+        }
+        $config = transfer_config();
+        $this->success('成功', [
+            'id' => $info['id'],
+            'mchId' => $config['mch_id'],
+            'appId' => $config['appid'],
+            'package' => $info['package_info'],
+            'out_bill_no' => $info['out_detail_no'],
+            'amount_received' => $info['amount_received'],
+        ]);
+    }
+
+    public function confirmMerchantTransfer()
+    {
+        $id = $this->request->param('id');
+        $info = $this->model->where(['id' => $id, 'user_id' => $this->auth->id, 'status' => 2])->find();
+        if (!$info) {
+            $this->error('提现记录不存在');
+        }
+        $this->success('成功');
     }
 }

@@ -67,6 +67,7 @@ class Coupons extends Backend
         if($params['day'] <= 0){
             $this->error('领取后到期天数错误');
         }
+        $params['is_first_order'] = !empty($params['is_first_order']) ? 1 : 0;
         $params['endtime'] = strtotime($params['endtime']);
         $result = false;
         Db::startTrans();
@@ -130,6 +131,7 @@ class Coupons extends Backend
         if($params['day'] <= 0){
             $this->error('领取后到期天数错误');
         }
+        $params['is_first_order'] = !empty($params['is_first_order']) ? 1 : 0;
         $params['endtime'] = strtotime($params['endtime']);
         $result = false;
         Db::startTrans();
@@ -157,7 +159,7 @@ class Coupons extends Backend
      */
     public function detail(){
         $id = $this->request->param('id');
-        $info = $this->model->where(['id' => $id])->field('id,name,goods_type,goods_ids,amount,stock,use_money,endtime,day,status')->find();
+        $info = $this->model->where(['id' => $id])->field('id,name,goods_type,goods_ids,amount,stock,use_money,endtime,day,status,is_first_order')->find();
         $info['goods_ids'] = explode(',',$info['goods_ids']);
         if($info['goods_type'] == 2){
             $info['goods_list'] = \app\admin\model\yp\Goods::where(['id' => ['in',$info['goods_ids']]])->field('id,name,image,money')->select();

@@ -29,7 +29,10 @@ class Goods extends Model
         'is_hot_text',
         'status_text',
         'images_arr',
-        'status'
+        'status',
+        'channel_text',
+        'shop_status_text',
+        'custom_status_text'
     ];
     
 
@@ -42,6 +45,16 @@ class Goods extends Model
     public function getStatusList()
     {
         return ['1' => __('Status 1'), '2' => __('Status 2')];
+    }
+
+    public function getShopStatusList()
+    {
+        return ['1' => '上架', '2' => '下架'];
+    }
+
+    public function getCustomStatusList()
+    {
+        return ['1' => '启用', '2' => '停用'];
     }
 
 
@@ -63,6 +76,39 @@ class Goods extends Model
         $value = $value ? $value : (isset($data['status']) ? $data['status'] : '');
         $list = $this->getStatusList();
         return isset($list[$value]) ? $list[$value] : '';
+    }
+
+    public function getChannelTextAttr($value, $data)
+    {
+        $isShop = isset($data['is_shop_sale']) ? (int)$data['is_shop_sale'] : ((isset($data['is_customized']) && (int)$data['is_customized'] === 1) ? 0 : 1);
+        $isCustom = isset($data['is_customized']) ? (int)$data['is_customized'] : 0;
+        if ($isShop && $isCustom) {
+            return '双渠道';
+        }
+        if ($isShop) {
+            return '商城';
+        }
+        if ($isCustom) {
+            return '定制';
+        }
+        return '归档';
+    }
+
+    public function getShopStatusTextAttr($value, $data)
+    {
+        $isShop = isset($data['is_shop_sale']) ? (int)$data['is_shop_sale'] : ((isset($data['is_customized']) && (int)$data['is_customized'] === 1) ? 0 : 1);
+        return $isShop ? '上架' : '下架';
+    }
+
+    public function getCustomStatusTextAttr($value, $data)
+    {
+        $isCustom = isset($data['is_customized']) ? (int)$data['is_customized'] : 0;
+        if (!$isCustom) {
+            return '未启用';
+        }
+        $status = isset($data['custom_status']) ? (string)$data['custom_status'] : '1';
+        $list = $this->getCustomStatusList();
+        return isset($list[$status]) ? $list[$status] : '启用';
     }
 
     public function getImagesArrAttr($value, $data)

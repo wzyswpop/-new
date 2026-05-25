@@ -463,4 +463,20 @@ class Service
     {
         return self::getSdkVersion() === self::SDK_VERSION_V3;
     }
+    public static function refund($params)
+    {
+        $config = Service::getConfig('wechat');
+        //创建支付对象
+        $pay = Pay::wechat($config);
+        $result = $pay->refund($params);
+        //使用重写的Response类、RedirectResponse、Collection类
+        if ($result instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
+            $result = RedirectResponse::create($result->getTargetUrl());
+        } elseif ($result instanceof \Symfony\Component\HttpFoundation\Response) {
+            $result = Response::create($result->getContent());
+        } elseif ($result instanceof \Yansongda\Supports\Collection) {
+            $result = Collection::make($result->all());
+        }
+        return $result;
+    }
 }

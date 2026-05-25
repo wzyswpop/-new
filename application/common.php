@@ -55,8 +55,18 @@ if(!function_exists('getValues')){
                     $data[$v['name']] = $v['value'];
                 }
             }
+            foreach ($name as $configName) {
+                if (!array_key_exists($configName, $data)) {
+                    $siteValue = config('site.' . $configName);
+                    $data[$configName] = $siteValue !== null ? $siteValue : '';
+                }
+            }
         }else {
             $data = Db::name('config')->where('name', $name)->find();
+            if(!$data){
+                $siteValue = config('site.' . $name);
+                return $siteValue !== null ? $siteValue : '';
+            }
             if($format){
                 if($data['type'] == 'images'){
                     $data = $data['value'] ? explode(',',$data['value']) : [];
@@ -196,7 +206,7 @@ if (!function_exists('pay_config')){
 if (!function_exists('transfer_config')){
 
     function transfer_config(){
-        $config = getValues(['mch_id','v3key','miniapp_id']);
+        $config = getValues(['mch_id','v3key','miniapp_id','transfer_scene_id','transfer_scene_report_infos']);
         $cert_config = Service::getConfig();
         return [
             // 可选，公众号APPID
@@ -205,6 +215,10 @@ if (!function_exists('transfer_config')){
             'mch_id'       => $config['mch_id'],
             // 必填，微信商户V3接口密钥
             'mch_v3_key'   => $config['v3key'],
+            // 商家转账场景ID，需与微信支付商户平台产品中心配置一致
+            'transfer_scene_id' => isset($config['transfer_scene_id']) && $config['transfer_scene_id'] ? $config['transfer_scene_id'] : '1005',
+            // 商家转账场景报备信息，JSON数组，按微信支付商户平台对应场景要求填写
+            'transfer_scene_report_infos' => isset($config['transfer_scene_report_infos']) ? $config['transfer_scene_report_infos'] : '',
             // 可选，微信商户证书序列号，可从公钥中提取
             'cert_serial'  => '',
             // 必填，微信商户证书公钥，支持证书内容或文件路径

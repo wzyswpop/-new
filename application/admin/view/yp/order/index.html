@@ -1,4 +1,4 @@
-<div class="panel panel-default panel-intro">
+<div class="panel panel-default panel-intro ops-page ops-order-page">
 
     <div class="panel-heading">
         {:build_heading(null,FALSE)}
@@ -11,233 +11,926 @@
     </div>
 
 
-    <div class="panel-body">
-        <div id="myTabContent" class="tab-content">
-            <div class="tab-pane fade active in" id="one">
-                <div class="widget-body no-padding">
-                    <div id="toolbar" class="toolbar">
-                        <a href="javascript:;" class="btn btn-primary btn-refresh" title="{:__('Refresh')}" ><i class="fa fa-refresh"></i> </a>
-<!--                        <a href="javascript:;" class="btn btn-danger btn-del btn-disabled disabled {:$auth->check('yp/order/del')?'':'hide'}" title="{:__('Delete')}" ><i class="fa fa-trash"></i> {:__('Delete')}</a>-->
-                        <a href="javascript:;" class="btn btn-danger btn-export_log {:$auth->check('yp/order/export_log')?'':'hide'}" >导出筛选订单</a>
-                        <a href="javascript:;" class="btn btn-danger btn-delivery btn-disabled disabled {:$auth->check('yp/order/delivery')?'':'hide'}" title="批量发货" ></i>批量发货</a>
-                    </div>
-                    <table id="table" data-show-export="false" data-show-toggle="false" data-show-columns="false" class="table" width="100%">
-                    </table>
+    <div class="panel-body ops-body">
+        <div class="ops-shell">
+            <div class="ops-header">
+                <div>
+                    <div class="ops-kicker">订单履约</div>
+                    <h1 class="ops-title">订单管理</h1>
+                    <p class="ops-subtitle">按状态筛选订单，集中处理改价、发货、售后和订单导出。</p>
+                </div>
+                <div class="ops-actions">
+                    <a href="javascript:;" class="btn btn-default btn-export_log {:$auth->check('yp/order/export_log')?'':'hide'}" ><i class="fa fa-download"></i> 导出筛选订单</a>
+                    <a href="javascript:;" class="btn btn-primary btn-delivery btn-disabled disabled {:$auth->check('yp/order/delivery')?'':'hide'}" title="批量发货" ><i class="fa fa-send"></i> 批量发货</a>
                 </div>
             </div>
 
+            <ul class="nav nav-tabs ops-filter-tabs" data-field="status">
+                <li class="{:$Think.get.status === null ? 'active' : ''}"><a href="#t-all" data-value="" data-toggle="tab">{:__('All')}</a></li>
+                {foreach name="statusList" item="vo"}
+                <li class="{:$Think.get.status === (string)$key ? 'active' : ''}"><a href="#t-{$key}" data-value="{$key}" data-toggle="tab">{$vo}</a></li>
+                {/foreach}
+            </ul>
+
+            <div class="ops-card">
+                <div class="ops-card-toolbar ops-order-toolbar">
+                    <div id="toolbar" class="toolbar order-toolbar ops-toolbar">
+                        <a href="javascript:;" class="btn btn-default btn-refresh" title="{:__('Refresh')}" ><i class="fa fa-refresh"></i> 刷新</a>
+                    </div>
+                </div>
+                <div id="myTabContent" class="tab-content ops-table-wrap ops-order-list">
+                    <div class="tab-pane fade active in" id="one">
+                        <div class="widget-body no-padding">
+                            <table id="table" data-show-export="false" data-show-toggle="false" data-show-columns="false" class="table" width="100%">
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <style type="text/css">
-    .yp_order_list{
-        margin-bottom: 15px;
+    :root {
+        --order-color-canvas: #f5f5f7;
+        --order-color-surface: #ffffff;
+        --order-color-surface-muted: #fafafa;
+        --order-color-text: #1d1d1f;
+        --order-color-text-secondary: #515154;
+        --order-color-text-tertiary: #86868b;
+        --order-color-border: rgba(0, 0, 0, .08);
+        --order-color-border-soft: rgba(0, 0, 0, .06);
+        --order-color-primary: #0071e3;
+        --order-color-primary-hover: #0066cc;
+        --order-color-warning-text: #9a5b00;
+        --order-color-warning-bg: #fff6df;
+        --order-color-info-text: #005eb8;
+        --order-color-info-bg: #edf6ff;
+        --order-color-success-text: #18713b;
+        --order-color-success-bg: #ecf8f0;
+        --order-color-danger-text: #c70015;
+        --order-color-danger-bg: #fff0f2;
+        --order-color-neutral-bg: #f2f2f7;
+        --order-space-1: 4px;
+        --order-space-2: 8px;
+        --order-space-3: 12px;
+        --order-space-4: 16px;
+        --order-space-5: 20px;
+        --order-space-6: 24px;
+        --order-space-8: 32px;
+        --order-radius-sm: 8px;
+        --order-radius-md: 12px;
+        --order-radius-lg: 16px;
+        --order-radius-pill: 999px;
+        --order-font-xs: 12px;
+        --order-font-sm: 13px;
+        --order-font-md: 14px;
+        --order-font-lg: 16px;
+        --order-font-xl: 20px;
+        --order-line-tight: 1.3;
+        --order-line-normal: 1.5;
+        --order-shadow-card: 0 1px 2px rgba(0, 0, 0, .04);
     }
-    .yp_order_list .detail{
-
+    .panel-intro,
+    .panel-intro > .panel-body {
+        background: var(--order-color-canvas);
     }
-    .fix-108{
-        width: 108px;
-        text-align: center;
+    .ops-order-page > .panel-body {
+        padding: 0;
+        background: transparent;
     }
-    .text-left{
-        text-align: left;
+    .ops-order-page .ops-table-wrap {
+        padding: var(--order-space-5);
+        background: var(--order-color-canvas);
     }
-    .text-right{
+    .order-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--order-space-2);
+        align-items: center;
+        margin-bottom: 0;
+    }
+    .order-toolbar .btn {
+        margin: 0;
+        border-radius: var(--order-radius-pill);
+        border: 1px solid var(--order-color-border);
+        box-shadow: none;
+        font-size: var(--order-font-sm);
+        font-weight: 500;
+        line-height: var(--order-line-tight);
+        padding: 8px var(--order-space-4);
+    }
+    .bootstrap-table .fixed-table-container,
+    .bootstrap-table .fixed-table-body,
+    .bootstrap-table .table {
+        background: transparent;
+        border: 0;
+        width: 100%;
+    }
+    .bootstrap-table .table > tbody > tr > td {
+        border: 0;
+        padding: 0;
+        width: 100%;
+    }
+    .bootstrap-table .table > tbody > tr,
+    .bootstrap-table .table > tbody {
+        width: 100%;
+    }
+    .yp-order-card {
+        width: 100%;
+        min-height: 280px;
+        margin-bottom: var(--order-space-4);
+        border: 1px solid var(--order-color-border);
+        border-radius: var(--order-radius-lg);
+        background: var(--order-color-surface);
+        box-shadow: var(--order-shadow-card);
+        overflow: hidden;
+        transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    .yp-order-card:hover {
+        border-color: rgba(0, 113, 227, .22);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
+        transform: translateY(-1px);
+    }
+    .yp-order-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--order-space-4);
+        align-items: start;
+        min-height: 78px;
+        padding: var(--order-space-4) var(--order-space-5);
+        border-bottom: 1px solid var(--order-color-border-soft);
+    }
+    .yp-order-title {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--order-space-2);
+        align-items: center;
+    }
+    .yp-order-check {
+        margin-top: 0;
+    }
+    .yp-order-no {
+        color: var(--order-color-text);
+        font-size: var(--order-font-md);
+        font-weight: 600;
+        line-height: var(--order-line-tight);
+    }
+    .yp-order-meta {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, max-content));
+        gap: var(--order-space-2) var(--order-space-5);
+        color: var(--order-color-text-tertiary);
+        font-size: var(--order-font-xs);
+        line-height: var(--order-line-normal);
+        margin-top: var(--order-space-2);
+    }
+    .yp-order-meta span {
+        display: block;
+        white-space: nowrap;
+    }
+    .yp-order-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 76px;
+        padding: 5px var(--order-space-3);
+        border-radius: var(--order-radius-pill);
+        font-size: var(--order-font-xs);
+        font-weight: 600;
+        line-height: var(--order-line-tight);
+        white-space: nowrap;
+    }
+    .yp-order-status.status-0 {
+        color: var(--order-color-text-tertiary);
+        background: var(--order-color-neutral-bg);
+    }
+    .yp-order-status.status-1 {
+        color: var(--order-color-warning-text);
+        background: var(--order-color-warning-bg);
+    }
+    .yp-order-status.status-2 {
+        color: var(--order-color-info-text);
+        background: var(--order-color-info-bg);
+    }
+    .yp-order-status.status-3 {
+        color: var(--order-color-info-text);
+        background: var(--order-color-info-bg);
+    }
+    .yp-order-status.status-4 {
+        color: var(--order-color-success-text);
+        background: var(--order-color-success-bg);
+    }
+    .yp-order-status.status-5,
+    .yp-order-status.status-6 {
+        color: var(--order-color-danger-text);
+        background: var(--order-color-danger-bg);
+    }
+    .yp-order-body {
+        display: grid;
+        grid-template-columns: minmax(520px, 1fr) 280px 220px;
+        gap: 0;
+        min-height: 202px;
+    }
+    .yp-order-products {
+        display: grid;
+        gap: var(--order-space-3);
+        align-content: start;
+        padding: var(--order-space-5);
+        overflow: visible;
+    }
+    .yp-order-product {
+        display: grid;
+        grid-template-columns: 60px minmax(0, 1fr) 104px;
+        gap: var(--order-space-3);
+        align-items: center;
+        height: 68px;
+    }
+    .yp-order-product img {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--order-radius-md);
+        object-fit: cover;
+        background: var(--order-color-canvas);
+    }
+    .yp-product-main {
+        display: grid;
+        grid-template-rows: 22px 38px;
+        gap: var(--order-space-2);
+        min-width: 0;
+    }
+    .yp-product-title {
+        color: var(--order-color-text);
+        font-size: var(--order-font-md);
+        font-weight: 600;
+        line-height: 22px;
+        margin-bottom: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .yp-product-sku {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: var(--order-space-2);
+        align-items: start;
+        color: var(--order-color-text-tertiary);
+        font-size: var(--order-font-xs);
+        line-height: 18px;
+        min-width: 0;
+    }
+    .yp-product-sku-label,
+    .yp-product-buy-label {
+        color: var(--order-color-text-tertiary);
+        font-size: var(--order-font-xs);
+        font-weight: 500;
+        line-height: 18px;
+        white-space: nowrap;
+    }
+    .yp-product-sku-value {
+        color: var(--order-color-text-secondary);
+        min-width: 0;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .yp-product-side {
+        display: grid;
+        grid-template-rows: 18px 22px 18px;
+        align-content: center;
+        gap: var(--order-space-1);
+        color: var(--order-color-text);
+        font-size: var(--order-font-sm);
+        line-height: var(--order-line-tight);
         text-align: right;
     }
-    .yp_order_list .table>thead{
-        background: #f1f4f6;
+    .yp-product-price {
+        font-weight: 600;
+        line-height: 22px;
     }
-    .bootstrap-table .table,
-    .bootstrap-table .table>thead>tr>th{
-        border-bottom: 1px solid #f1f1f1;
+    .yp-product-side .count {
+        color: var(--order-color-text-tertiary);
+        margin-top: 0;
+        line-height: 18px;
     }
-    .table-bordered{
-        border: 1px solid #f1f1f1;
+    .yp-order-summary,
+    .yp-order-action {
+        padding: var(--order-space-5);
+        border-left: 1px solid var(--order-color-border-soft);
     }
-    .table-bordered > thead > tr > th,
-    .table-bordered > tbody > tr > td {
-        border: 1px solid #f1f1f1;
-        border-bottom: 0;
+    .yp-order-summary {
+        display: grid;
+        align-content: start;
+        grid-template-rows: repeat(5, 1fr);
+        gap: var(--order-space-2);
     }
-    .table-bordered > thead > tr > th, label{
-        margin-bottom: 0;
-        font-weight: normal;
+    .yp-order-field {
+        display: grid;
+        grid-template-rows: 16px minmax(20px, auto);
+        gap: var(--order-space-1);
+        min-width: 0;
     }
-    .table-bordered > tbody td.empty{
-        border-top: 0;
+    .yp-order-label {
+        color: var(--order-color-text-tertiary);
+        display: block;
+        font-size: var(--order-font-xs);
+        line-height: var(--order-line-tight);
     }
-    .table-bordered > tbody td.conceal{
-        border-left: 0 ;
-        border-right: 0 ;
+    .yp-order-value {
+        color: var(--order-color-text);
+        font-size: var(--order-font-md);
+        font-weight: 500;
+        line-height: var(--order-line-normal);
+        word-break: break-all;
     }
-    .table-bordered > tbody td.conceal.fix-108{
+    .yp-order-money {
+        color: var(--order-color-text);
+        font-size: var(--order-font-xl);
+        font-weight: 700;
+        line-height: var(--order-line-tight);
+        letter-spacing: 0;
     }
-    /* 产品 */
-    .yp_order_list p{
-        margin-bottom: 4px;
+    .yp-order-action {
+        display: grid;
+        grid-template-rows: auto auto;
+        align-content: start;
+        gap: var(--order-space-4);
+        min-height: 0;
     }
-    .yp_order_list .item {
+    .yp-order-action .searchit {
+        text-decoration: none;
+    }
+    .yp-order-actions {
         display: flex;
-        margin: 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--order-space-2);
+        align-self: start;
+        margin-top: var(--order-space-2);
     }
-
-    .yp_order_list .item .order_img {
-        flex-shrink: 0;
+    .yp-order-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        flex: 1 1 0;
+        min-height: 34px;
+        border-radius: var(--order-radius-pill);
+        font-size: var(--order-font-sm);
+        font-weight: 600;
+        line-height: var(--order-line-tight);
+        text-decoration: none;
+        border: 1px solid var(--order-color-border);
+        background: var(--order-color-surface);
+        color: var(--order-color-primary);
+        transition: background .14s ease, border-color .14s ease, color .14s ease;
     }
-    .yp_order_list .item .order_info {
-        width: 90%;
-        margin-left: 10px;
-        margin-top: 2px;
+    .yp-order-action-btn:hover,
+    .yp-order-action-btn:focus {
+        color: var(--order-color-primary-hover);
+        text-decoration: none;
+        background: var(--order-color-surface-muted);
     }
-    .yp_order_list .item .order_info .sku {
-        color: #9e9e9e;
+    .yp-order-action-btn.primary {
+        color: var(--order-color-surface);
+        background: var(--order-color-primary);
+        border-color: var(--order-color-primary);
     }
-    .yp_order_list .operation a{
-        color: #565656;
+    .yp-order-action-btn.primary:hover,
+    .yp-order-action-btn.primary:focus {
+        color: var(--order-color-surface);
+        background: var(--order-color-primary-hover);
+    }
+    .yp-order-action-btn.btn-copy-recipient {
+        flex-basis: 100%;
+    }
+    .yp-production-summary {
+        margin-top: var(--order-space-4);
+        padding: var(--order-space-3);
+        border: 1px solid var(--order-color-border-soft);
+        border-radius: var(--order-radius-md);
+        background: var(--order-color-surface-muted);
+    }
+    .yp-production-title {
+        margin-bottom: var(--order-space-2);
+        color: var(--order-color-text);
+        font-size: var(--order-font-sm);
+        font-weight: 700;
+        line-height: var(--order-line-tight);
+    }
+    .yp-production-line {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--order-space-3);
+        color: var(--order-color-text-secondary);
+        font-size: var(--order-font-xs);
+        line-height: var(--order-line-normal);
+    }
+    .yp-production-line strong {
+        color: var(--order-color-text);
+        white-space: nowrap;
+    }
+    .yp-order-empty {
+        color: var(--order-color-text-tertiary);
+        font-size: var(--order-font-sm);
+        padding: var(--order-space-5);
+        text-align: center;
+    }
+    @media (max-width: 1200px) {
+        .yp-order-card {
+            min-height: 0;
+        }
+        .yp-order-body {
+            grid-template-columns: minmax(0, 1fr) 260px;
+            grid-template-rows: minmax(0, 1fr) auto;
+            min-height: 0;
+        }
+        .yp-order-action {
+            grid-column: 1 / -1;
+            border-left: 0;
+            border-top: 1px solid var(--order-color-border-soft);
+            grid-template-columns: minmax(0, 1fr) 220px;
+            grid-template-rows: auto;
+            align-items: center;
+        }
+        .yp-order-actions {
+            min-width: 220px;
+        }
+    }
+    @media (max-width: 768px) {
+        .yp-order-card {
+            min-height: 0;
+        }
+        .ops-order-page .ops-table-wrap {
+            padding: var(--order-space-3);
+        }
+        .yp-order-head {
+            grid-template-columns: minmax(0, 1fr);
+            padding: var(--order-space-4);
+        }
+        .yp-order-meta {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .yp-order-body {
+            grid-template-columns: minmax(0, 1fr);
+            min-height: 0;
+        }
+        .yp-order-product {
+            grid-template-columns: 56px minmax(0, 1fr);
+            height: auto;
+            min-height: 76px;
+        }
+        .yp-order-products {
+            overflow: visible;
+        }
+        .yp-product-main {
+            grid-template-rows: auto auto;
+        }
+        .yp-product-side {
+            grid-column: 2;
+            text-align: left;
+            grid-template-rows: none;
+            grid-template-columns: 56px minmax(0, 1fr) auto;
+            align-items: center;
+        }
+        .yp-order-summary,
+        .yp-order-action {
+            border-left: 0;
+            border-top: 1px solid var(--order-color-border-soft);
+        }
+        .yp-order-products,
+        .yp-order-summary,
+        .yp-order-action {
+            padding: var(--order-space-4);
+        }
+        .yp-order-action {
+            display: grid;
+            gap: var(--order-space-4);
+        }
+        .yp-order-actions {
+            min-width: 0;
+            flex-direction: column;
+        }
+    }
+    .ops-order-page .ops-shell {
+        max-width: 1280px;
+        gap: 18px;
+    }
+    .ops-order-page .ops-header {
+        align-items: center;
+        min-height: 136px;
+        padding: 24px 28px;
+    }
+    .ops-order-page .ops-title {
+        font-size: 26px;
+    }
+    .ops-order-page .ops-filter-tabs {
+        box-shadow: none;
+        border-color: var(--order-color-border);
+        background: #fff;
+        padding: 8px;
+    }
+    .ops-order-page .ops-filter-tabs > li > a {
+        min-width: 78px;
+        min-height: 42px;
+    }
+    .ops-order-toolbar {
+        display: none;
+    }
+    .ops-order-page .ops-table-wrap {
+        padding: 0;
+        background: #fff;
+    }
+    .ops-order-page .fixed-table-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0;
+        min-height: 66px;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--order-color-border-soft);
+        background: #fff;
+    }
+    .ops-order-page .fixed-table-toolbar .bs-bars,
+    .ops-order-page .fixed-table-toolbar .search,
+    .ops-order-page .fixed-table-toolbar .columns {
+        margin: 0;
+    }
+    .ops-order-page .fixed-table-toolbar .bs-bars {
+        flex: 0 0 auto;
+    }
+    .ops-order-page .fixed-table-toolbar .pull-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        margin: 0;
+        margin-left: auto;
+    }
+    .ops-order-page .fixed-table-toolbar .columns {
+        order: 2;
+    }
+    .ops-order-page .fixed-table-toolbar .search {
+        order: 1;
+    }
+    .ops-order-page .fixed-table-toolbar .search .form-control {
+        width: 280px;
+        min-width: 0;
+        height: 40px;
+        border-radius: 12px;
+        background: #fff;
+    }
+    .ops-order-page .fixed-table-toolbar .btn {
+        min-height: 40px;
+        border-radius: 12px;
+        background: #fff;
+    }
+    .ops-order-page .fixed-table-toolbar .btn-refresh {
+        padding: 9px 16px;
+    }
+    .ops-order-page .fixed-table-container {
+        padding: 18px;
+        background: #f4f6f9;
+    }
+    .yp-order-card {
+        min-height: 0;
+        margin-bottom: 14px;
+        border-color: #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 8px 22px rgba(16, 24, 40, .04);
+    }
+    .yp-order-head {
+        min-height: 64px;
+        padding: 14px 18px;
+        background: #fff;
+    }
+    .yp-order-title {
+        justify-content: flex-start;
+    }
+    .yp-order-check {
+        width: 16px;
+        height: 16px;
+        margin: 0 10px 0 0;
+        vertical-align: middle;
+    }
+    .yp-order-no {
+        font-size: 15px;
+        font-weight: 700;
+    }
+    .yp-order-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        margin-top: 8px;
+        font-size: 13px;
+    }
+    .yp-order-status {
+        min-width: 74px;
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    .yp-order-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 390px;
+        min-height: 0;
+    }
+    .yp-order-products {
+        gap: 10px;
+        padding: 18px;
+    }
+    .yp-order-product {
+        grid-template-columns: 64px minmax(0, 1fr) 96px;
+        min-height: 72px;
+        height: auto;
+        padding: 8px;
+        border-radius: 12px;
+        background: #fbfcfe;
+    }
+    .yp-order-product img {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+    }
+    .yp-product-main {
+        grid-template-rows: auto auto;
+        gap: 4px;
+    }
+    .yp-product-title {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+    .yp-product-sku {
+        display: block;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+    .yp-product-sku-label {
+        display: none;
+    }
+    .yp-product-side {
+        grid-template-rows: auto auto;
+        gap: 4px;
+    }
+    .yp-product-buy-label {
+        display: none;
+    }
+    .yp-product-price {
+        font-size: 15px;
+        font-weight: 750;
+    }
+    .yp-order-side {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 14px;
+        padding: 18px;
+        border-left: 1px solid var(--order-color-border-soft);
+        background: #fff;
+    }
+    .yp-order-side-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+    .yp-order-section {
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--order-color-border-soft);
+        border-radius: 14px;
+        background: #fbfcfe;
+    }
+    .yp-order-section-title {
+        color: var(--order-color-text);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+    .yp-order-field {
+        grid-template-rows: auto auto;
+        gap: 4px;
+    }
+    .yp-order-label {
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .yp-order-value {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+    .yp-order-money {
+        font-size: 24px;
+        line-height: 1.15;
+    }
+    .yp-order-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 0;
+    }
+    .yp-order-action-btn {
+        width: auto;
+        min-height: 38px;
+        flex: 1 1 auto;
+        border-radius: 11px;
+        font-size: 13px;
+    }
+    .yp-order-action-btn.btn-copy-recipient {
+        flex-basis: auto;
+    }
+    .yp-order-summary,
+    .yp-order-action {
+        padding: 0;
+        border-left: 0;
+    }
+    @media (max-width: 1200px) {
+        .yp-order-body {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .yp-order-side {
+            border-left: 0;
+            border-top: 1px solid var(--order-color-border-soft);
+        }
+    }
+    @media (max-width: 768px) {
+        .ops-order-page .ops-header {
+            min-height: 0;
+            padding: 20px;
+        }
+        .ops-order-page .ops-table-wrap,
+        .ops-order-page .fixed-table-container {
+            padding: 12px;
+        }
+        .ops-order-page .fixed-table-toolbar {
+            display: grid;
+            padding: 12px;
+        }
+        .ops-order-page .fixed-table-toolbar .search .form-control {
+            width: 100%;
+        }
+        .ops-order-page .fixed-table-toolbar .pull-right {
+            width: 100%;
+            margin-left: 0;
+            justify-content: stretch;
+        }
+        .ops-order-page .fixed-table-toolbar .search {
+            flex: 1;
+        }
+        .yp-order-head {
+            padding: 14px;
+        }
+        .yp-order-products,
+        .yp-order-side {
+            padding: 14px;
+        }
+        .yp-order-product {
+            grid-template-columns: 58px minmax(0, 1fr);
+        }
+        .yp-product-side {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+        .yp-order-side-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .yp-order-actions {
+            flex-direction: column;
+        }
     }
 </style>
 <script type="text/html" id="itemtpl">
-    <% if(i == 0){ %>
-    <div class="col-sm-12" style="margin-bottom: 15px;">
-        <table class="table table-bordered table-striped table-hover table-nowrap">
-            <thead>
-            <tr>
-                <th class="text-center"><div class="th-inner">商品</div></th>
-                <th class="fix-108"><div class="th-inner">商品总价</div></th>
-                <th class="fix-108"><div class="th-inner">重量</div></th>
-                <th class="fix-108"><div class="th-inner">烘焙程度</div></th>
-                <th class="fix-108"><div class="th-inner">数量</div></th>
-                <th class="fix-108"><div class="th-inner">买家</div></th>
-                <th class="fix-108"><div class="th-inner">优惠金额</div></th>
-                <th class="fix-108"><div class="th-inner">订单金额(优惠后)</div></th>
-                <th class="fix-108"><div class="th-inner">状态</div></th>
-            </tr>
-            </thead>
-        </table>
-    </div>
-    <% } %>
-    <div class="yp_order_list col-sm-12">
-        <table class="table table-bordered table-hover ">
-            <thead>
-            <tr>
-                <th colspan="8">
-                    <div class="th-inner">
-                        <input name="checkbox" data-id="<%=item.id%>" id="order_<%=item.id%>" type="checkbox" />
-                        <label for="order_<%=item.id%>">订单号：<%=item.order_no%></label>
-                        <label style="margin-left:60px;"for="order_<%=item.id%>">订单类型：<%=item.order_type_name%></label>
-                        <label style="margin-left:60px;"for="order_<%=item.id%>">支付方式：<%=item.payment_name%></label>
-                        <label style="margin-left:60px;"for="order_<%=item.id%>">订单金额：<%=item.order_money%></label>
-                        <label style="margin-left:60px;"for="order_<%=item.id%>">支付余额：<%=item.cash_money%></label>
-                        <label style="margin-left:60px;"for="order_<%=item.id%>">抵扣积分：<%=item.discount_integral%></label>
-                        <label style="margin-left:60px;" for="order_<%=item.id%>">创建时间：<%=Moment(item.createtime*1000).format("YYYY-MM-DD HH:mm:ss")%></label>
-                    </div>
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <% for(var k = 0 ; k < item.item.length ; k ++){ %>
-            <% var goods = item.item[k]; %>
-            <% var labelarr = ['primary', 'success', 'info', 'danger', 'warning', 'muted']; %>
-            <tr>
-                <td class="conceal">
-                    <div class="item">
-                        <div class="order_img">
-                            <a href="javascript:"><img class="img-md img-center" src="<%=cdnurl(goods.goods_image)%>" alt="<%=goods.goods_title%>"></a>
-                        </div>
-                        <div class="order_info">
-                            <p><%=goods.goods_title%></p>
-                            <p class="sku"><%=goods.stock_title%></p>
+    <div class="yp-order-card">
+        <div class="yp-order-head">
+            <div>
+                <div class="yp-order-title">
+                    <input name="checkbox" class="yp-order-check" data-id="<%=item.id%>" id="order_<%=item.id%>" type="checkbox" />
+                    <label class="yp-order-no" for="order_<%=item.id%>">订单号：<%=item.order_no%></label>
+                </div>
+                <div class="yp-order-meta">
+                    <span>订单类型：<%=item.order_type_name%></span>
+                    <span>支付方式：<%=item.payment_name%></span>
+                    <span>创建时间：<%=Moment(item.createtime*1000).format("YYYY-MM-DD HH:mm:ss")%></span>
+                </div>
+            </div>
+            <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
+                <span class="yp-order-status status-<%=item.status%>"><%=item.status_text%></span>
+            </a>
+        </div>
+        <div class="yp-order-body">
+            <div class="yp-order-products">
+                <% if(item.item && item.item.length){ %>
+                <% for(var k = 0 ; k < item.item.length ; k ++){ %>
+                <% var goods = item.item[k]; %>
+                <div class="yp-order-product">
+                    <img src="<%=cdnurl(goods.goods_image)%>" alt="<%=goods.goods_title%>">
+                    <div class="yp-product-main">
+                        <div class="yp-product-title"><%=goods.goods_title%></div>
+                        <div class="yp-product-sku">
+                            <span class="yp-product-sku-label">豆子信息</span>
+                            <span class="yp-product-sku-value">
+                                <% if(item.order_type == 1){ %>
+                                <% if(goods.weight){ %><%=goods.weight%>g<% } %>
+                                <% if(goods.baking){ %><% if(goods.weight){ %> · <% } %><%=goods.baking%><% } %>
+                                <% if(goods.ratio){ %><% if(goods.weight || goods.baking){ %> · <% } %><%=goods.ratio%>%<% } %>
+                                <% if(!goods.weight && !goods.baking && !goods.ratio){ %>定制咖啡豆<% } %>
+                                <% }else{ %>
+                                <%=goods.stock_title%>
+                                <% if(goods.weight){ %> · <%=goods.weight%>g<% } %>
+                                <% if(goods.baking){ %> · <%=goods.baking%><% } %>
+                                <% } %>
+                            </span>
                         </div>
                     </div>
-                </td>
-                <td class="conceal fix-108">
-                    <p>￥<%=goods.money%></p>
-                </td>
-                <td class="conceal fix-108">
-                    <p><%=goods.weight%>g</p>
-                </td>
-                <td class="conceal fix-108">
-                    <p><%=goods.baking%></p>
-                </td>
-                <td class="conceal fix-108"> <%=goods.num%> </td>
-                <% if(k == 0){ %>
-                <td class="fix-108">
-                    <p style="margin-bottom:5px;">
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="user.id" data-value="<%=item.user.id%>"><%=item.user.nickname%></a>
-                    </p>
-                </td>
-                <td class="fix-108">
-                    <p><strong>￥<%= item.discount_money %></strong> </p>
-                </td>
-                <td class="fix-108">
-                    <p><strong>￥<%= item.order_money %></strong> </p>
-                </td>
-                <td class="fix-108 operation">
-                    <% if(item.status == 0){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[4]%>"><i class="fa fa-circle"></i> <%=item.status_text%> </span>
-                        </a>
-                    </p>
-                    <% }else if(item.status == 1){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[4]%>"><i class="fa fa-circle"></i> <%=item.status_text%> </span>
-                        </a>
-                    </p>
-                    <p><a href="javascript:;" class="detail" data-id="<%=item.id%>">订单详情</a> </p>
-                    <% }else if(item.status == 2){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[0]%>"><i class="fa fa-circle"></i> <%=item.status_text%></span>
-                        </a>
-                    </p>
-                    <p><a href="javascript:;" class="detail" data-id="<%=item.id%>">订单详情</a> </p>
-                    <% }else if(item.status == 3){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[2]%>"><i class="fa fa-circle"></i> <%=item.status_text%></span>
-                        </a>
-                    </p>
-                    <p><a href="javascript:;" class="detail" data-id="<%=item.id%>">订单详情</a> </p>
-<!--                    <p><a href="javascript:;" class="kuaidisub" data-id="<%=item.id%>">查看物流</a> </p>-->
-
-                    <% }else if(item.status == 4){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[1]%>"><i class="fa fa-circle"></i> <%=item.status_text%></span>
-                        </a>
-                    </p>
-                    <p><a href="javascript:;" class="detail" data-id="<%=item.id%>">订单详情</a> </p>
-<!--                    <p><a href="javascript:;" class="kuaidisub" data-id="<%=item.id%>">查看物流</a> </p>-->
-
-                    <% }else if(item.status == 5){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[0]%>"><i class="fa fa-circle"></i> <%=item.status_text%></span>
-                        </a>
-                    </p>
-                    <p><a href="javascript:;" class="detail" data-id="<%=item.id%>">订单详情</a> </p>
-                    <% }else if(item.status == 6){ %>
-                    <p>
-                        <a href="javascript:;" class="searchit" data-toggle="tooltip" title="" data-field="status" data-value="<%=item.status%>" data-original-title="点击搜索 <%=item.status_text%>">
-                            <span class="text-<%=labelarr[0]%>"><i class="fa fa-circle"></i> <%=item.status_text%></span>
-                        </a>
-                    </p>
-                    <p><a href="javascript:;" class="detail" data-id="<%=item.id%>">订单详情</a> </p>
-                    <% } %>
-                </td>
-
-                <% }else{ %>
-                <td class="empty"> </td>
-                <td class="empty"> </td>
-                <td class="empty"> </td>
+                    <div class="yp-product-side">
+                        <div class="yp-product-buy-label">购买信息</div>
+                        <div class="yp-product-price">￥<%=goods.money%></div>
+                        <div class="count">x <%=goods.num%></div>
+                    </div>
+                </div>
                 <% } %>
-            </tr>
-            <% } %>
-            </tbody>
-        </table>
+                <% }else{ %>
+                <div class="yp-order-empty">暂无商品信息</div>
+                <% } %>
+            </div>
+            <div class="yp-order-side">
+                <div class="yp-order-side-grid">
+                    <div class="yp-order-section">
+                        <div class="yp-order-section-title">买家与金额</div>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">买家</span>
+                            <a href="javascript:;" class="yp-order-value searchit" data-toggle="tooltip" title="" data-field="user.id" data-value="<%=item.user.id%>"><%=item.user.nickname%></a>
+                        </div>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">订单金额</span>
+                            <span class="yp-order-money">￥<%= item.order_money %></span>
+                        </div>
+                        <% if(item.order_type == 1 && item.recipe_name){ %>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">客人配方名</span>
+                            <span class="yp-order-value"><%=item.recipe_name%></span>
+                        </div>
+                        <% } %>
+                        <% if(item.order_type == 1 && item.recipe_name && item.recipe_total_weight){ %>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">配方总重量</span>
+                            <span class="yp-order-value"><%=item.recipe_total_weight%>g</span>
+                        </div>
+                        <% } %>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">优惠 / 余额 / 积分</span>
+                            <span class="yp-order-value">￥<%= item.discount_money %> / ￥<%= item.cash_money %> / <%= item.discount_integral %></span>
+                        </div>
+                        <% if(item.order_type == 1 && item.has_production_data){ %>
+                        <div class="yp-production-summary">
+                            <div class="yp-production-title">生产用量</div>
+                            <div class="yp-production-line">
+                                <span>熟豆合计</span>
+                                <strong><%=item.production_total_roasted_weight%>g</strong>
+                            </div>
+                            <div class="yp-production-line">
+                                <span>生豆合计</span>
+                                <strong><%=item.production_total_green_weight%>g</strong>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                    <div class="yp-order-section">
+                        <div class="yp-order-section-title">收货信息</div>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">收货人</span>
+                            <span class="yp-order-value"><%=item.name || '-'%></span>
+                        </div>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">手机号</span>
+                            <span class="yp-order-value"><%=item.phone || '-'%></span>
+                        </div>
+                        <div class="yp-order-field">
+                            <span class="yp-order-label">地址</span>
+                            <span class="yp-order-value"><%=((item.province_name || '') + (item.city_name || '') + (item.county_name || '') + (item.address || '')) || '-'%></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="yp-order-actions">
+                    <a href="javascript:;" class="yp-order-action-btn btn-copy-recipient"
+	                       data-name="<%=Encode(item.name)%>"
+	                       data-phone="<%=Encode(item.phone)%>"
+	                       data-address="<%=Encode((item.province_name || '') + (item.city_name || '') + (item.county_name || '') + (item.address || ''))%>"
+	                       data-production="<%=Encode(item.production_text)%>">复制收货信息</a>
+	                    <a href="javascript:;" class="yp-order-action-btn detail" data-id="<%=item.id%>">订单详情</a>
+                    <% if(item.status == 1){ %>
+                    <a href="yp/order/changeprice/ids/<%=item.id%>" class="yp-order-action-btn primary btn-dialog" title="修改订单金额" data-area='["720px","500px"]'>修改金额</a>
+                    <% } %>
+                    <% if(item.status == 2){ %>
+                    <a href="javascript:;" class="yp-order-action-btn primary btn-delivery" data-id="<%=item.id%>">立即发货</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
     </div>
 </script>

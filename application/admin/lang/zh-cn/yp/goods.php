@@ -8,6 +8,8 @@ return [
     'Images'        => '轮播图',
     'Sales'         => '销量',
     'See'           => '浏览量',
+    'Stock'         => '库存',
+    'AG'            => 'Ag值',
     'Content'       => '商品图文',
     'Is_hot'        => '是否热销',
     'Is_hot 1'      => '是',

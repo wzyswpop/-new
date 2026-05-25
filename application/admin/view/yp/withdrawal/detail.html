@@ -43,6 +43,30 @@
         <td>应到账金额</td>
         <td>{$row.amount_received|htmlentities}</td>
     </tr>
+    {if $row.out_batch_no}
+    <tr>
+        <td>微信转账单号</td>
+        <td>{$row.out_batch_no|htmlentities}</td>
+    </tr>
+    {/if}
+    {if $row.out_detail_no}
+    <tr>
+        <td>商家转账单号</td>
+        <td>{$row.out_detail_no|htmlentities}</td>
+    </tr>
+    {/if}
+    {if $row.transfer_state}
+    <tr>
+        <td>微信状态</td>
+        <td>{$row.transfer_state|htmlentities}</td>
+    </tr>
+    {/if}
+    {if $row.transfer_fail_reason}
+    <tr>
+        <td>微信失败原因</td>
+        <td>{$row.transfer_fail_reason|htmlentities}</td>
+    </tr>
+    {/if}
     <tr>
         <td>申请时间</td>
         <td>{$row.createtime|date="Y-m-d H:i:s",###}</td>

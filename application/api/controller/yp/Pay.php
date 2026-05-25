@@ -197,39 +197,43 @@ class Pay extends Base{
             echo '签名错误';
             return;
         }
-        $s = false;
         $data = $pay->verify();
         $out_trade_no = $data['out_trade_no'];
-        $order_info = Order::where(['order_no' => $out_trade_no])->find();
-        if($order_info && $order_info['status'] == 1){
-            Db::startTrans();
-            try {
+        Db::startTrans();
+        try {
+            $order_info = Order::where(['order_no' => $out_trade_no])->lock(true)->find();
+            if($order_info && $order_info['status'] == 1){
                 $order_info->paytime = time();
                 $order_info->payment = 'wechat';
-                $score = $order_info['cash_money'];
-                if($score >= 0){
-                    $score_log = [
+                $balance_money = $order_info['cash_money'];
+                if($balance_money > 0){
+                    $money_log = [
                         'user_id' => $order_info['user_id'],
-                        'money' => $score,
+                        'money' => $balance_money,
                         'type' => 'sub',
                         'memo' => '支付订单扣减',
                         'order_no' => $order_info['order_no'],
                         'change_type' => 'pay'
                     ];
-                    User::changeMoney($score_log);
+                    $res = User::changeMoney($money_log);
+                    if(!$res){
+                        throw new Exception('余额扣减失败');
+                    }
                 }
                 $order_info->status = '2';
                 $order_info->paytime = time();
+                $order_info->transaction_id = $data['transaction_id'];
                 $order_info->save();
-                $s = true;
                 Db::commit();
-            }catch (Exception $e){
-                Db::rollback();
-                Log::write('商品支付回调错误'.$e->getMessage());
-            }
-            if($s){
                 pushOrder($order_info['id'],30,30,0);
+            }else{
+                Db::commit();
             }
+        }catch (Exception $e){
+            Db::rollback();
+            Log::write('商品支付回调错误'.$e->getMessage());
+            echo '业务处理失败';
+            return;
         }
         exit($pay->success());
     }
@@ -250,30 +254,32 @@ class Pay extends Base{
         if(!$order_info){
             $this->error('订单不存在');
         }
-        if($order_info['order_money'] > $this->auth->money){
-            $cash_money = $order_info['order_money'] - $this->auth->money;
-            $order_info->cash_money = $cash_money;
+        $order_money = $order_info['order_money'];
+        $user_money = $this->auth->money;
+        if($order_money > $user_money){
+            $balance_money = $user_money > 0 ? bcmul($user_money, 1, 2) : 0;
+            $wechat_money = bcsub($order_money, $balance_money, 2);
+            $order_info->cash_money = $balance_money;
+
             $order_info->payment = 'wechat';
             $payment = 'wechat';
         }else{
             $payment = 'balance';
             $order_info->payment = 'balance';
             $order_info->cash_money = 0;
+            $wechat_money = 0;
         }
         $order_info->save();
         if($payment == 'balance'){
             $order_info = Order::where(['user_id' => $this->auth->id,'status' => '1','id' => $id])->find();
             $this->balance($order_info);
-        }else{
-            //判断用户余额
-            $order_info = Order::where(['user_id' => $this->auth->id,'status' => '1','id' => $id])->find();
-            $order_money = $order_info['order_money'] - $cash_money;
+            return;
         }
         if(!$this->auth->open_id){
             $this->error('缺少 openid');
         }
         $params = [
-            'amount'=>$order_money,
+            'amount'=>$wechat_money,
             'orderid'=>$order_info['order_no'],
             'type' =>"wechat",
             'title'=>"购买商品",

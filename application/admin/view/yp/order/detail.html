@@ -182,6 +182,36 @@
         display: inline-block;
         text-align: right;
     }
+
+    .production-card {
+        margin: 15px 0;
+        padding: 15px;
+        border: 1px solid #e8edf0;
+        border-radius: 6px;
+        background: #f8f9fb;
+    }
+
+    .production-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .production-card__title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .production-card__summary {
+        display: flex;
+        gap: 24px;
+        margin-top: 8px;
+        color: #676767;
+    }
 </style>
 <div class="order-detail">
     <ul class="order-block progress-{$row.status}">
@@ -213,7 +243,52 @@
             <div class="panel-heading">商品信息</div>
             <div class="panel-body">
                 <p><span>订单号：</span><small>{$row.order_no}</small> <span style="margin-left: 30px;">买家：</span><small>{$row.user.nickname}</small><strong></strong></p>
-                <table class="table table-bordered">
+                {if condition="$row.order_type == 1 && !empty($row.recipe_name)"}
+	                <p>
+	                    {if condition="!empty($row.recipe_name)"}
+	                    <span>客人配方名：</span><small>{$row.recipe_name}</small>
+                    {/if}
+                    {if condition="!empty($row.recipe_total_weight)"}
+                    <span style="margin-left: 30px;">配方总重量：</span><small>{$row.recipe_total_weight}g</small>
+                    {/if}
+	                </p>
+	                {/if}
+	                {if condition="$row.order_type == 1 && !empty($row.has_production_data)"}
+	                    <div class="production-card">
+	                    <div class="production-card__head">
+	                        <div>
+	                            <p class="production-card__title">生产用量</p>
+	                            <div class="production-card__summary">
+	                                <span>熟豆合计：{$row.production_total_roasted_weight}g</span>
+	                                <span>生豆合计：{$row.production_total_green_weight}g</span>
+	                            </div>
+	                        </div>
+	                    </div>
+	                    <table class="table table-bordered">
+	                        <thead>
+	                        <tr>
+	                            <th class="text-center">豆子</th>
+	                            <th class="text-center">烘焙</th>
+	                            <th class="text-center">熟豆重量</th>
+	                            <th class="text-center">损水率</th>
+	                            <th class="text-center">生豆用量</th>
+	                        </tr>
+	                        </thead>
+	                        <tbody>
+	                        {volist name="row.production_items" id="production"}
+	                        <tr class="text-center">
+	                            <td>{$production.goods_title}</td>
+	                            <td>{$production.baking}{if condition="!empty($production.loss_default)"}（默认损水率）{/if}</td>
+	                            <td>{$production.roasted_weight}g</td>
+	                            <td>{$production.loss_rate}</td>
+	                            <td><strong>{$production.green_weight}g</strong></td>
+	                        </tr>
+	                        {/volist}
+	                        </tbody>
+	                    </table>
+	                </div>
+	                {/if}
+	                <table class="table table-bordered">
                     <thead>
                     <tr>
                         <th class="text-center">
@@ -241,7 +316,16 @@
                     <tr class="text-center">
                         <td><a href="javascript:"><img class="img-sm img-center" src="{$vo.goods_image|cdnurl|htmlentities}"></a></td>
                         <td><strong>{$vo.goods_title}</strong></td>
-                        <td>{$vo.stock_title ?? '单规格'}</td>
+                        <td>
+                            {if condition="$row.order_type == 1"}
+                                {if condition="isset($vo.weight) && $vo.weight"}{$vo.weight}g{/if}
+                                {if condition="isset($vo.baking) && $vo.baking"}{if condition="isset($vo.weight) && $vo.weight"} / {/if}{$vo.baking}{/if}
+                                {if condition="isset($vo.ratio) && $vo.ratio"}{if condition="(isset($vo.weight) && $vo.weight) || (isset($vo.baking) && $vo.baking)"} / {/if}{$vo.ratio}%{/if}
+                                {if condition="(!isset($vo.weight) || !$vo.weight) && (!isset($vo.baking) || !$vo.baking) && (!isset($vo.ratio) || !$vo.ratio)"}定制咖啡豆{/if}
+                            {else /}
+                                {$vo.stock_title ?? '单规格'}
+                            {/if}
+                        </td>
                         <td>{$vo.num}</td>
                         <td>{$vo.unit_price}</td>
                         <td>{$vo.money}</td>
@@ -341,10 +425,6 @@
     </div>
     {/if}
 </div>
-
-
-
-
 
 <div class="hide layer-footer">
     <label class="control-label col-xs-12 col-sm-2"></label>

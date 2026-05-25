@@ -10,7 +10,6 @@ use think\console\Input;
 use Workerman\Lib\Timer;
 use Workerman\Worker;
 use app\api\model\Order;
-use app\api\model\SkuPrice;
 use app\api\model\IntegralOrder;
 use app\api\model\UserCoupons;
 use app\api\model\Coupons;
@@ -85,12 +84,11 @@ class WorkmanTask extends Command
                 $order_list = Order::where(['status' => '1','createtime' => ['<',$time]])->with('item')->select();
                 if($order_list){
                     foreach ($order_list as $v){
-                        $v->status = '0';
-                        $v->canceltime = time();
-                        $v->save();
-                        foreach ($v['item'] as $vv){
-                            SkuPrice::where(['id' => $vv['stock_id'],'goods_id' => $vv['goods_id']])->setInc('stock',$vv['num']);
+                        $order = Order::where(['id' => $v['id'],'status' => '1'])->with('item')->lock(true)->find();
+                        if(!$order){
+                            continue;
                         }
+                        Order::cancelWithRestore($order, false);
                     }
                 }
                 Db::commit();
@@ -115,37 +113,31 @@ class WorkmanTask extends Command
                 echo $e->getMessage()."\n\r";
             }
         }
+        $autoReceiveTime = time() - Order::AUTO_RECEIVE_DAYS * 86400;
+        $order_list = Order::where('createtime', '<', $autoReceiveTime)
+            ->whereIn('status', [2, 3])
+            ->field('id')
+            ->select();
+        if($order_list){
+            foreach ($order_list as $v){
+                Db::startTrans();
+                try {
+                    $order = Order::where(['id' => $v['id']])
+                        ->whereIn('status', [2, 3])
+                        ->lock(true)
+                        ->find();
+                    if($order){
+                        Order::confirmReceipt($order);
+                    }
+                    Db::commit();
+                }catch (\Throwable $e){
+                    Db::rollback();
+                    echo '自动确认收货失败，订单ID：'.$v['id'].'，错误：'.$e->getMessage()."\n\r";
+                }
+            }
+        }
         if($config['confirmtime']){
             $time = time() - $config['confirmtime'] * 86400;
-            Db::startTrans();
-            try {
-                $order_list = Order::where(['status' => '3','delivertime' => ['<',$time]])->select();
-                if($order_list){
-                    foreach ($order_list as $v){
-                        $v->status = '4';
-                        $v->confirmtime = time();
-                        $score = floor($v['order_money']);
-                        if($score >= 1){
-                            $score_log = [
-                                'user_id' => $v['user_id'],
-                                'money' => $score,
-                                'type' => 'add',
-                                'memo' => '确认收货',
-                                'order_no' => $v['order_no'],
-                                'change_type' => 'pay'
-                            ];
-                            \app\api\model\User::changeIntegral($score_log);
-                        }
-                        $v->save();
-                        Order::distribution($v['id']);
-                        Order::receiving($v['user_id']);
-                    }
-                }
-                Db::commit();
-            }catch (Exception $e){
-                Db::rollback();
-                echo $e->getMessage()."\n\r";
-            }
             Db::startTrans();
             try {
                 $score_order = IntegralOrder::where(['status' => '2','delivertime' => ['<',$time]])->select();

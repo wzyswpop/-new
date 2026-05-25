@@ -3,6 +3,8 @@
 namespace app\admin\model\yp;
 
 use think\Model;
+use think\Log;
+use app\common\library\WechatMerchantTransfer;
 
 
 class Withdrawal extends Model
@@ -51,32 +53,55 @@ class Withdrawal extends Model
     {
         try {
             $config = transfer_config();
-            var_dump($config);
-
-
-            $pay =\WePayV3\Transfers::instance($config);
-            die();
-
-            $result = $pay->batchs([
-                'out_batch_no'         => $params['order_no'],
-                'batch_name'           => $params['desc'],
-                'batch_remark'         => $params['desc'],
-                'total_amount'         => $params['total_amount'],
-                'transfer_detail_list' => $params['batch_list'],
-                /*'transfer_detail_list' => [
+            $pay = WechatMerchantTransfer::instance($config);
+            $body = [
+                'appid' => $config['appid'],
+                'out_bill_no' => $params['out_bill_no'],
+                'transfer_scene_id' => isset($params['transfer_scene_id']) ? $params['transfer_scene_id'] : $config['transfer_scene_id'],
+                'openid' => $params['openid'],
+                'transfer_amount' => $params['transfer_amount'],
+                'transfer_remark' => $params['transfer_remark'],
+            ];
+            if (!empty($params['transfer_scene_report_infos'])) {
+                $body['transfer_scene_report_infos'] = $params['transfer_scene_report_infos'];
+            } elseif (!empty($config['transfer_scene_report_infos'])) {
+                $reportInfos = json_decode($config['transfer_scene_report_infos'], true);
+                if (is_array($reportInfos)) {
+                    $body['transfer_scene_report_infos'] = $reportInfos;
+                }
+            }
+            if (empty($body['transfer_scene_report_infos']) && $body['transfer_scene_id'] == '1005') {
+                $body['transfer_scene_report_infos'] = [
                     [
-                        'out_detail_no'   => $params['out_detail_no'],
-                        'transfer_amount' => $params['transfer_amount'],
-                        'transfer_remark' => $params['desc'],
-                        'openid'          => $params['openid']
-                    ]
-                ]*/
-            ]);
-            var_dump($result);
-
+                        'info_type' => '岗位类型',
+                        'info_content' => '分销员',
+                    ],
+                    [
+                        'info_type' => '报酬说明',
+                        'info_content' => '佣金提现',
+                    ],
+                ];
+            }
+            $result = $pay->createBill($body);
+            Log::write('微信零钱提现返回：' . json_encode($result, JSON_UNESCAPED_UNICODE));
+            if(!$result || isset($result['code']) || !isset($result['out_bill_no'])){
+                $message = isset($result['message']) ? $result['message'] : '微信转账受理失败';
+                if(isset($result['code'])){
+                    $message = $result['code'] . '：' . $message;
+                }
+                throw new \Exception($message);
+            }
+            return $result;
         } catch (\Exception $exception) {
-            // 出错啦，处理下吧
-            echo $exception->getMessage() . PHP_EOL;
+            Log::write('微信零钱提现失败：' . $exception->getMessage());
+            throw $exception;
         }
+    }
+
+    public function queryTransfer($outBillNo)
+    {
+        $config = transfer_config();
+        $pay = WechatMerchantTransfer::instance($config);
+        return $pay->queryByOutBillNo($outBillNo);
     }
 }

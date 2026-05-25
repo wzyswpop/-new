@@ -11,7 +11,7 @@ class ServiceOrder extends Model
 
     public $type = [1 => '仅退款',2 => '退款退货'];
     public $return_goods = ['买家取消','等待卖家确认','等待用户退货','用户已发货','卖家拒绝收货','卖家确认收货','卖家拒绝'];
-    public $return_money = ['买家取消','等待卖家确认','卖家同意','卖家拒绝'];
+    public $return_money = ['买家取消','退款审核中','退款成功','退款驳回'];
 
     /**
      * 退货退款

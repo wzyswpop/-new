@@ -9,6 +9,7 @@ use think\Request;
 use think\Db;
 use think\Exception;
 use app\common\model\Config;
+use app\api\model\SkuPrice;
 class Index extends  Base
 {
     protected $noNeedLogin = ['doc','indexData','test'];
@@ -55,12 +56,24 @@ class Index extends  Base
     public function indexData()
     {
         $banner = Banner::where('status',1)->order('weigh','desc')->select();
+        foreach ($banner as $k=>&$v){
+            $v['content'] = str_replace('src="/uploads','src="https://'.$this->request->host().'/uploads',$v['content']);
+        }
         $type = $this->request->post('type');
         if($type){
-            $list = \app\api\model\Goods::where('status',1)->where('is_customized',0)->where('is_hot',1)->where('classify',$type)->field('id,name,status,is_customized,is_hot,classify,weigh,money,image,sales')->order('weigh','desc')->paginate();
+            $list = \app\api\model\Goods::where('status',1)->where('is_shop_sale',1)->where('is_hot',1)->where('classify',$type)->field('id,name,status,is_customized,is_hot,classify,weigh,money,image,sales,special_flavour,specs,baking,is_stock')->order('weigh','desc')->paginate();
         }else{
-            $list = \app\api\model\Goods::where('status',1)->where('is_customized',0)->where('is_hot',1)->field('id,name,status,is_customized,is_hot,classify,weigh,money,image,sales')->order('weigh','desc')->paginate();
+            $list = \app\api\model\Goods::where('status',1)->where('is_shop_sale',1)->where('is_hot',1)->field('id,name,status,is_customized,is_hot,classify,weigh,money,image,sales,special_flavour,specs,baking,is_stock')->order('weigh','desc')->paginate();
         }
+        $list->each(function ($goods) {
+            $money = SkuPrice::where(['goods_id' => $goods['id'], 'status' => 'up'])
+                ->where('stock', '>', 0)
+                ->min('money');
+            if ($money !== null && $money !== '') {
+                $goods['money'] = number_format((float)$money, 2, '.', '');
+            }
+            return $goods;
+        });
         $this->success('ok',compact('banner','list'));
     }
 

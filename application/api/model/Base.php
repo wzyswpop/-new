@@ -5,7 +5,7 @@ use think\Model;
 
 class Base extends Model{
 
-    public static $order_status = ['已取消','未支付','待发货','待收货','已完成','售后','售后完成'];
+    public static $order_status = ['已取消','未支付','待发货','待收货','已完成','退款审核中','退款成功','待评价'];
     public static $refund_status = [1 => '待审核','同意','拒绝'];
     public static $integral_order_status = ['已取消','待发货','待收货','已完成'];
     public static $sign_order_status = ['已取消','待支付','待发货','待收货','已完成'];
@@ -38,7 +38,7 @@ class Base extends Model{
      * 订单状态
      */
     public function getOrderStatusAttr($value,$row){
-        return self::$order_status[$row['status']];
+        return isset(self::$order_status[$row['status']]) ? self::$order_status[$row['status']] : '';
     }
 
     /**

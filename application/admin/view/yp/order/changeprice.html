@@ -1,0 +1,194 @@
+<style>
+    .change-price-page {
+        --price-color-canvas: #f5f5f7;
+        --price-color-surface: #ffffff;
+        --price-color-text: #1d1d1f;
+        --price-color-secondary: #515154;
+        --price-color-tertiary: #86868b;
+        --price-color-border: rgba(0, 0, 0, .08);
+        --price-color-primary: #0071e3;
+        --price-color-primary-hover: #0066cc;
+        --price-radius-md: 12px;
+        --price-radius-lg: 16px;
+        --price-radius-pill: 999px;
+        padding: 20px;
+        background: var(--price-color-canvas);
+    }
+    .change-price-card {
+        background: var(--price-color-surface);
+        border: 1px solid var(--price-color-border);
+        border-radius: var(--price-radius-lg);
+        overflow: hidden;
+    }
+    .change-price-section {
+        padding: 22px 24px;
+    }
+    .change-price-title {
+        margin: 0 0 8px;
+        color: var(--price-color-text);
+        font-size: 17px;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+    .change-price-desc {
+        margin: 0;
+        color: var(--price-color-tertiary);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+    .change-price-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+    }
+    .change-price-kv {
+        padding: 14px 16px;
+        border: 1px solid var(--price-color-border);
+        border-radius: var(--price-radius-md);
+        background: #fbfbfd;
+    }
+    .change-price-label {
+        display: block;
+        color: var(--price-color-tertiary);
+        font-size: 12px;
+        line-height: 1.4;
+    }
+    .change-price-value {
+        display: block;
+        margin-top: 6px;
+        color: var(--price-color-text);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.5;
+        word-break: break-all;
+    }
+    .change-price-form {
+        border-top: 1px solid var(--price-color-border);
+    }
+    .change-price-field {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr);
+        gap: 16px;
+        align-items: center;
+        margin-top: 18px;
+    }
+    .change-price-field label {
+        margin: 0;
+        color: var(--price-color-secondary);
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .change-price-input {
+        height: 40px;
+        border: 1px solid var(--price-color-border);
+        border-radius: var(--price-radius-md);
+        box-shadow: none;
+        color: var(--price-color-text);
+        font-size: 14px;
+    }
+    .change-price-help {
+        margin: 10px 0 0 126px;
+        color: var(--price-color-tertiary);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+    .change-price-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 16px 24px;
+        border-top: 1px solid var(--price-color-border);
+        background: #fbfbfd;
+    }
+    .change-price-footer .btn {
+        border-radius: var(--price-radius-pill);
+        padding: 8px 18px;
+        font-size: 13px;
+    }
+    .change-price-footer .btn-success {
+        background: var(--price-color-primary);
+        border-color: var(--price-color-primary);
+    }
+    .change-price-footer .btn-success:hover,
+    .change-price-footer .btn-success:focus {
+        background: var(--price-color-primary-hover);
+        border-color: var(--price-color-primary-hover);
+    }
+</style>
+
+<form id="change-price-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    <div class="change-price-page">
+        <div class="change-price-card">
+            <div class="change-price-section">
+                <h3 class="change-price-title">修改待支付订单金额</h3>
+                <p class="change-price-desc">仅待支付订单支持改价。商品明细金额会保留原值用于核对，用户支付时将按新的订单金额结算。</p>
+                <div class="change-price-grid">
+                    <div class="change-price-kv">
+                        <span class="change-price-label">订单号</span>
+                        <span class="change-price-value">{$row.order_no|htmlentities}</span>
+                    </div>
+                    <div class="change-price-kv">
+                        <span class="change-price-label">当前订单金额</span>
+                        <span class="change-price-value">￥{$row.order_money}</span>
+                    </div>
+                    <div class="change-price-kv">
+                        <span class="change-price-label">订单状态</span>
+                        <span class="change-price-value">{$row.status_text|htmlentities}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="change-price-section change-price-form">
+                <div class="change-price-field">
+                    <label for="c-order_money">新订单金额</label>
+                    <input id="c-order_money" data-rule="required" class="form-control change-price-input" name="row[order_money]" type="number" step="0.01" min="0" value="{$row.order_money}">
+                </div>
+                <p class="change-price-help">请输入实际需要用户支付的最终金额，最多保留两位小数。</p>
+            </div>
+            <div class="change-price-footer">
+                <button type="submit" class="btn btn-success btn-embossed btn-change-price-submit">{:__('OK')}</button>
+                <button type="reset" class="btn btn-default btn-embossed btn-close" onclick="Layer.closeAll();">{:__('Close')}</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    require(['jquery'], function ($) {
+        var form = $("#change-price-form");
+        var submit = function () {
+            var btn = form.find(".btn-change-price-submit");
+            if (btn.hasClass("disabled")) {
+                return false;
+            }
+            btn.addClass("disabled");
+            $.ajax({
+                url: form.attr("action") || location.href,
+                type: "POST",
+                data: form.serialize(),
+                dataType: "json",
+                success: function (ret) {
+                    if (ret && ret.code === 1) {
+                        parent.Toastr.success(ret.msg || "改价成功");
+                        parent.$(".btn-refresh").trigger("click");
+                        var index = parent.Layer.getFrameIndex(window.name);
+                        parent.Layer.close(index);
+                    } else {
+                        parent.Toastr.error((ret && ret.msg) || "改价失败");
+                        btn.removeClass("disabled");
+                    }
+                },
+                error: function () {
+                    parent.Toastr.error("网络异常，请稍后重试");
+                    btn.removeClass("disabled");
+                }
+            });
+            return false;
+        };
+        form.on("submit", function (e) {
+            e.preventDefault();
+            return submit();
+        });
+        form.on("click", ".btn-change-price-submit", submit);
+    });
+</script>

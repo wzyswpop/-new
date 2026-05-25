@@ -1,0 +1,607 @@
+<style type="text/css">
+    :root {
+        --ra-bg: #f5f7fb;
+        --ra-card: #ffffff;
+        --ra-card-soft: #f8fafc;
+        --ra-text: #111827;
+        --ra-muted: #667085;
+        --ra-soft: #98a2b3;
+        --ra-border: #e5e7eb;
+        --ra-border-soft: #eef2f6;
+        --ra-primary: #2563eb;
+        --ra-primary-soft: #eff6ff;
+        --ra-success: #147a43;
+        --ra-success-soft: #ecfdf3;
+        --ra-warning: #b54708;
+        --ra-warning-soft: #fffaeb;
+        --ra-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 14px 36px rgba(16, 24, 40, .06);
+    }
+    body {
+        background: var(--ra-bg);
+    }
+    .ra-page {
+        min-height: 100vh;
+        padding: 24px;
+        background: var(--ra-bg);
+        color: var(--ra-text);
+    }
+    .ra-shell {
+        display: grid;
+        gap: 18px;
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+    .ra-panel {
+        border: 1px solid var(--ra-border);
+        border-radius: 18px;
+        background: var(--ra-card);
+        box-shadow: var(--ra-shadow);
+        overflow: hidden;
+    }
+    .ra-hero {
+        display: grid;
+        gap: 18px;
+        padding: 24px;
+    }
+    .ra-hero-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+    }
+    .ra-kicker {
+        margin-bottom: 8px;
+        color: var(--ra-primary);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .ra-title {
+        margin: 0;
+        color: var(--ra-text);
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+    .ra-desc {
+        max-width: 760px;
+        margin: 8px 0 0;
+        color: var(--ra-muted);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .ra-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .ra-control-label {
+        color: var(--ra-muted);
+        font-size: 13px;
+        font-weight: 700;
+    }
+    .ra-sort-link {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 13px;
+        border: 1px solid var(--ra-border);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--ra-muted);
+        font-size: 13px;
+        font-weight: 650;
+        text-decoration: none;
+        transition: background .16s ease, border-color .16s ease, color .16s ease;
+    }
+    .ra-sort-link:hover,
+    .ra-sort-link:focus,
+    .ra-sort-link.active {
+        border-color: rgba(37, 99, 235, .24);
+        background: var(--ra-primary-soft);
+        color: var(--ra-primary);
+        text-decoration: none;
+    }
+    .ra-alert {
+        padding: 12px 14px;
+        border: 1px solid #fedf89;
+        border-radius: 12px;
+        background: var(--ra-warning-soft);
+        color: var(--ra-warning);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .ra-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+    .ra-metric {
+        min-height: 112px;
+        display: grid;
+        align-content: space-between;
+        padding: 18px;
+        border: 1px solid var(--ra-border-soft);
+        border-radius: 14px;
+        background: var(--ra-card-soft);
+    }
+    .ra-metric-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .ra-metric-label,
+    .ra-list-label {
+        display: block;
+        color: var(--ra-muted);
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1.35;
+    }
+    .ra-metric-icon {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ra-primary);
+        border: 1px solid var(--ra-border-soft);
+    }
+    .ra-metric-value {
+        margin-top: 16px;
+        color: var(--ra-text);
+        font-size: 30px;
+        font-weight: 760;
+        line-height: 1.1;
+    }
+    .ra-metric-value.success {
+        color: var(--ra-success);
+    }
+    .ra-list-panel {
+        padding: 18px;
+    }
+    .ra-list-head {
+        display: grid;
+        grid-template-columns: minmax(230px, 1.25fr) 86px 92px minmax(160px, .8fr) 92px 112px 120px 110px 110px 74px;
+        gap: 12px;
+        align-items: center;
+        padding: 0 14px 10px;
+        color: var(--ra-soft);
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .ra-list {
+        display: grid;
+        gap: 10px;
+    }
+    .ra-row {
+        display: grid;
+        grid-template-columns: minmax(230px, 1.25fr) 86px 92px minmax(160px, .8fr) 92px 112px 120px 110px 110px 74px;
+        gap: 12px;
+        align-items: center;
+        min-height: 86px;
+        padding: 14px;
+        border: 1px solid var(--ra-border-soft);
+        border-radius: 14px;
+        background: #fff;
+        transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    .ra-row:hover {
+        border-color: rgba(37, 99, 235, .18);
+        box-shadow: 0 10px 28px rgba(16, 24, 40, .06);
+        transform: translateY(-1px);
+    }
+    .ra-user {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        color: inherit;
+        text-decoration: none;
+    }
+    .ra-user:hover,
+    .ra-user:focus {
+        color: inherit;
+        text-decoration: none;
+    }
+    .ra-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--ra-card-soft);
+        border: 1px solid var(--ra-border-soft);
+    }
+    .ra-name-line {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .ra-name {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--ra-text);
+        font-size: 15px;
+        font-weight: 760;
+        line-height: 1.3;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .ra-view-pill {
+        flex: 0 0 auto;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: var(--ra-primary-soft);
+        color: var(--ra-primary);
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .ra-meta {
+        margin-top: 5px;
+        overflow: hidden;
+        color: var(--ra-soft);
+        font-size: 13px;
+        line-height: 1.45;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .ra-cell {
+        min-width: 0;
+    }
+    .ra-cell .ra-list-label {
+        display: none;
+    }
+    .ra-cell-value {
+        margin-top: 4px;
+        color: var(--ra-text);
+        font-size: 16px;
+        font-weight: 760;
+        line-height: 1.3;
+    }
+    .ra-cell-value.success {
+        color: var(--ra-success);
+    }
+    .ra-rate-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+    .ra-rate-input-wrap {
+        width: 106px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 11px;
+        border: 1px solid var(--ra-border);
+        border-radius: 11px;
+        background: var(--ra-card-soft);
+        transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .ra-rate-input-wrap:focus-within {
+        border-color: rgba(37, 99, 235, .48);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+    .ra-rate-input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--ra-text);
+        font-size: 15px;
+        font-weight: 760;
+        text-align: right;
+    }
+    .ra-rate-unit {
+        margin-left: 5px;
+        color: var(--ra-muted);
+        font-size: 13px;
+        font-weight: 700;
+    }
+    .ra-save-rate,
+    .ra-action-link {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 13px;
+        border-radius: 11px;
+        font-size: 13px;
+        font-weight: 760;
+        line-height: 36px;
+        text-decoration: none;
+        transition: background .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease;
+    }
+    .ra-save-rate {
+        min-width: 62px;
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid rgba(37, 99, 235, .18);
+        background: var(--ra-primary-soft);
+        color: var(--ra-primary);
+        box-shadow: none;
+        outline: none;
+    }
+    .ra-save-rate:hover,
+    .ra-save-rate:focus {
+        border-color: rgba(37, 99, 235, .28);
+        background: #dbeafe;
+        color: var(--ra-primary);
+    }
+    .ra-save-rate[disabled] {
+        opacity: .58;
+        pointer-events: none;
+    }
+    .ra-action-link {
+        border: 1px solid var(--ra-border);
+        background: #fff;
+        color: var(--ra-muted);
+    }
+    .ra-action-link:hover,
+    .ra-action-link:focus {
+        border-color: rgba(37, 99, 235, .24);
+        background: var(--ra-primary-soft);
+        color: var(--ra-primary);
+        text-decoration: none;
+    }
+    .ra-empty {
+        padding: 44px 18px;
+        border: 1px dashed var(--ra-border);
+        border-radius: 14px;
+        background: var(--ra-card-soft);
+        color: var(--ra-muted);
+        font-size: 14px;
+        text-align: center;
+    }
+    .ra-save-frame {
+        position: absolute;
+        width: 0;
+        height: 0;
+        border: 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+    @media (max-width: 1180px) {
+        .ra-hero-top {
+            display: grid;
+        }
+        .ra-controls {
+            justify-content: flex-start;
+        }
+        .ra-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .ra-list-head {
+            display: none;
+        }
+        .ra-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .ra-user {
+            grid-column: 1 / -1;
+        }
+        .ra-cell .ra-list-label {
+            display: block;
+        }
+    }
+    @media (max-width: 720px) {
+        .ra-page {
+            padding: 14px;
+        }
+        .ra-hero,
+        .ra-list-panel {
+            padding: 16px;
+        }
+        .ra-summary,
+        .ra-row {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .ra-rate-form {
+            align-items: stretch;
+        }
+        .ra-rate-input-wrap {
+            flex: 1;
+            width: auto;
+        }
+    }
+</style>
+<div class="ra-page">
+    <div class="ra-shell">
+        <section class="ra-panel ra-hero">
+            <div class="ra-hero-top">
+                <div>
+                    <div class="ra-kicker">分销运营</div>
+                    <h3 class="ra-title">推广者管理</h3>
+                    <p class="ra-desc">展示已有推荐成功注册用户的账户；客户数按完整传播链路统计，订单和销售额按最近有比例上级归属。</p>
+                </div>
+                <div class="ra-controls">
+                    <span class="ra-control-label">排序</span>
+                    <a class="ra-sort-link {if condition="$sort == 'direct_referral_count'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=direct_referral_count&order=desc"><i class="fa fa-user-plus"></i> 直属客户</a>
+                    <a class="ra-sort-link {if condition="$sort == 'referral_count'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=referral_count&order=desc"><i class="fa fa-users"></i> 全链路客户</a>
+                    <a class="ra-sort-link {if condition="$sort == 'settled_order_count'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=settled_order_count&order=desc"><i class="fa fa-check-square-o"></i> 完成订单</a>
+                    <a class="ra-sort-link {if condition="$sort == 'settled_sales_money'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=settled_sales_money&order=desc"><i class="fa fa-line-chart"></i> 销售额</a>
+                    <a class="ra-sort-link {if condition="$sort == 'real_commission_money'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=real_commission_money&order=desc"><i class="fa fa-database"></i> 累计佣金</a>
+                    <a class="ra-sort-link {if condition="$sort == 'withdrawn_money'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=withdrawn_money&order=desc"><i class="fa fa-credit-card"></i> 已提现</a>
+                    <a class="ra-sort-link {if condition="$sort == 'available_commission'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort=available_commission&order=desc"><i class="fa fa-money"></i> 可提现</a>
+                    <a class="ra-sort-link {if condition="$order == 'asc'"}active{/if}" href="{:url('user/user/referral_accounts')}?sort={$sort|htmlentities}&order={$nextOrder|htmlentities}">
+                        {if condition="$order == 'asc'"}<i class="fa fa-sort-amount-asc"></i>{else /}<i class="fa fa-sort-amount-desc"></i>{/if}
+                        {if condition="$order == 'asc'"}低到高{else /}高到低{/if}
+                    </a>
+                </div>
+            </div>
+            {if condition="$summary.rate_column_ready == 0"}
+            <div class="ra-alert">当前数据库还未添加 distribution_rate 字段，所有推荐比例会按 0% 显示；执行字段 SQL 后即可保存每个账户的比例。</div>
+            {/if}
+            {if condition="$summary.truncated == 1"}
+            <div class="ra-alert">部分传播链路存在循环或超过 100 层，统计已自动截断。请进入明细检查会员绑定关系。</div>
+            {/if}
+            <div class="ra-summary">
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">有推荐账户</span>
+                        <span class="ra-metric-icon"><i class="fa fa-user-circle-o"></i></span>
+                    </div>
+                    <span class="ra-metric-value">{$summary.account_count}</span>
+                </div>
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">直属客户</span>
+                        <span class="ra-metric-icon"><i class="fa fa-user-plus"></i></span>
+                    </div>
+                    <span class="ra-metric-value">{$summary.direct_referral_count}</span>
+                </div>
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">全链路客户</span>
+                        <span class="ra-metric-icon"><i class="fa fa-user-plus"></i></span>
+                    </div>
+                    <span class="ra-metric-value">{$summary.referral_count}</span>
+                </div>
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">归属完成销售额</span>
+                        <span class="ra-metric-icon"><i class="fa fa-rmb"></i></span>
+                    </div>
+                    <span class="ra-metric-value">￥{$summary.settled_sales_money}</span>
+                </div>
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">真实累计佣金</span>
+                        <span class="ra-metric-icon"><i class="fa fa-database"></i></span>
+                    </div>
+                    <span class="ra-metric-value success">￥{$summary.real_commission_money}</span>
+                </div>
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">已提现</span>
+                        <span class="ra-metric-icon"><i class="fa fa-credit-card"></i></span>
+                    </div>
+                    <span class="ra-metric-value success">￥{$summary.withdrawn_money}</span>
+                </div>
+                <div class="ra-metric">
+                    <div class="ra-metric-head">
+                        <span class="ra-metric-label">可提现佣金</span>
+                        <span class="ra-metric-icon"><i class="fa fa-money"></i></span>
+                    </div>
+                    <span class="ra-metric-value success">￥{$summary.available_commission}</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="ra-panel ra-list-panel">
+            <div class="ra-list-head">
+                <span>推广者</span>
+                <span>直属客户</span>
+                <span>全链路客户</span>
+                <span>推荐比例</span>
+                <span>归属完成订单</span>
+                <span>归属完成销售额</span>
+                <span>真实累计佣金</span>
+                <span>已提现</span>
+                <span>可提现佣金</span>
+                <span>操作</span>
+            </div>
+            <div class="ra-list">
+                {if condition="$lists"}
+                {volist name="lists" id="item"}
+                <div class="ra-row">
+                    <a class="ra-user btn-dialog" href="{:url('user/user/referrals')}?ids={$item.id}" title="{$item.nickname|htmlentities} 的推荐用户" data-area='["1080px","760px"]'>
+                        <img class="ra-avatar" src="{$item.avatar|htmlentities}" alt="{$item.nickname|htmlentities}">
+                        <div>
+                            <div class="ra-name-line">
+                                <span class="ra-name">{$item.nickname|htmlentities}</span>
+                                <span class="ra-view-pill">查看绑定</span>
+                            </div>
+                            <div class="ra-meta">ID {$item.id} · {$item.mobile_text|htmlentities}</div>
+                        </div>
+                    </a>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">直属客户</span>
+                        <div class="ra-cell-value">{$item.direct_referral_count}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">全链路客户</span>
+                        <div class="ra-cell-value">{$item.referral_count}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">推荐比例</span>
+                        <form class="ra-rate-form" action="{:url('user/user/referral_rate')}" method="post" target="ra-rate-save-frame" data-id="{$item.id}">
+                            <input type="hidden" name="ids" value="{$item.id}">
+                            <span class="ra-rate-input-wrap">
+                                <input class="ra-rate-input" name="distribution_rate" type="number" min="0" max="100" step="0.01" value="{$item.distribution_rate}" {if condition="$summary.rate_column_ready == 0"}disabled{/if}>
+                                <span class="ra-rate-unit">%</span>
+                            </span>
+                            <button type="submit" class="ra-save-rate" {if condition="$summary.rate_column_ready == 0"}disabled{/if}>保存</button>
+                        </form>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">归属完成订单</span>
+                        <div class="ra-cell-value">{$item.settled_order_count}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">归属完成销售额</span>
+                        <div class="ra-cell-value">￥{$item.settled_sales_money}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">真实累计佣金</span>
+                        <div class="ra-cell-value success">{if condition="$item.has_rate == 1"}￥{$item.real_commission_money}{else /}{$item.real_commission_money}{/if}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">已提现</span>
+                        <div class="ra-cell-value success">￥{$item.withdrawn_money}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <span class="ra-list-label">可提现佣金</span>
+                        <div class="ra-cell-value success">{if condition="$item.has_rate == 1"}￥{$item.available_commission}{else /}{$item.available_commission}{/if}</div>
+                    </div>
+                    <div class="ra-cell">
+                        <a class="ra-action-link btn-dialog" href="{:url('user/user/referrals')}?ids={$item.id}" title="{$item.nickname|htmlentities} 的推荐用户" data-area='["1080px","760px"]'>明细</a>
+                    </div>
+                </div>
+                {/volist}
+                {else}
+                <div class="ra-empty">暂无推荐成功注册的账户</div>
+                {/if}
+            </div>
+        </section>
+    </div>
+</div>
+<iframe name="ra-rate-save-frame" class="ra-save-frame" title="save referral rate"></iframe>
+<script>
+    require(['jquery'], function ($) {
+        var $activeButton = null;
+        $('.ra-save-frame').on('load', function () {
+            if (!$activeButton) {
+                return;
+            }
+            $activeButton.text('已保存');
+            setTimeout(function () {
+                $activeButton.prop('disabled', false).text('保存');
+                $activeButton = null;
+            }, 900);
+        });
+        $(document).on('submit', '.ra-rate-form', function () {
+            var $form = $(this);
+            var $button = $form.find('.ra-save-rate');
+            var $input = $form.find('.ra-rate-input');
+            var rate = $.trim($input.val());
+            if (rate === '' || isNaN(rate) || parseFloat(rate) < 0 || parseFloat(rate) > 100) {
+                Toastr.error('推荐比例必须在 0 到 100 之间');
+                return false;
+            }
+            $activeButton = $button;
+            $button.prop('disabled', true).text('保存中');
+            return true;
+        });
+    });
+</script>

@@ -91,6 +91,16 @@
             <input id="c-commission" data-rule="required" class="form-control" name="row[commission]" min="0" type="number" value="{$row.commission}">
         </div>
     </div>
+    <div class="form-group">
+        <label for="c-distribution_rate" class="control-label col-xs-12 col-sm-2">推荐比例:</label>
+        <div class="col-xs-12 col-sm-4">
+            <div class="input-group">
+                <input id="c-distribution_rate" data-rule="required;range(0~100)" class="form-control" name="row[distribution_rate]" min="0" max="100" step="0.01" type="number" value="{$row.distribution_rate}">
+                <span class="input-group-addon">%</span>
+            </div>
+            <span class="help-block">默认 0%，该用户作为推荐者时，按此比例计算下级用户完成订单佣金。</span>
+        </div>
+    </div>
 <!--    <div class="form-group">-->
 <!--        <label for="c-score" class="control-label col-xs-12 col-sm-2">{:__('Score')}:</label>-->
 <!--        <div class="col-xs-12 col-sm-4">-->

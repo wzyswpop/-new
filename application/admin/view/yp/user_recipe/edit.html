@@ -1,0 +1,70 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">配方名称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" name="row[name]" type="text" value="{$row.name|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">配方豆种:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="form-control-static">{$row.bean_summary|htmlentities}</div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">公开状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="form-control-static">{$row.public_status_text|htmlentities}</div>
+            <span class="help-block">公开/私有由客人在小程序端控制，后台只负责精选或下架。</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">精选:</label>
+        <div class="col-xs-12 col-sm-8">
+            {:build_radios('row[is_featured]', $isFeaturedList, $row.is_featured)}
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            {:build_radios('row[status]', $statusList, $row.status)}
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">公开作者名:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" name="row[author_name]" type="text" value="{$row.author_name|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">作者称号:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" name="row[author_title]" type="text" value="{$row.author_title|htmlentities}" placeholder="如 奶咖调配者、浅烘探索者">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">配方简介:</label>
+        <div class="col-xs-12 col-sm-8">
+            <textarea class="form-control" name="row[description]" rows="3">{$row.description|htmlentities}</textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">场景标签:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" name="row[scene_tags]" type="text" value="{$row.scene_tags|htmlentities}" placeholder="奶咖,冰拿铁,门店通用">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">风味标签:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" name="row[flavor_tags]" type="text" value="{$row.flavor_tags|htmlentities}" placeholder="坚果,巧克力,低酸顺口">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+            <button type="reset" class="btn btn-default btn-embossed">{:__('Reset')}</button>
+        </div>
+    </div>
+</form>

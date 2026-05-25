@@ -38,6 +38,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'name', title: __('Name'), operate: 'LIKE'},
                         {field: 'goods_type', title: __('Goods_type'), searchList: {"1":__('Goods_type 1'),"2":__('Goods_type 2')}, formatter: Table.api.formatter.normal},
                         {field: 'amount', title: __('Amount'), operate:false},
+                        {field: 'is_first_order', title: __('Is_first_order'), searchList: {"0":__('Is_first_order 0'),"1":__('Is_first_order 1')}, formatter: Table.api.formatter.normal},
                         // {field: 'stock', title: __('Stock')},
                         {field: 'use_money', title: __('Use_money'), operate:false},
                         {field: 'day', title: __('Day')},
@@ -66,6 +67,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             stock:'',
                             amount:'',
                             goods_ids:[],
+                            is_first_order:0,
                         },
                         goods_type:[
                             {
@@ -205,6 +207,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             stock:'',
                             amount:'',
                             goods_ids:[],
+                            is_first_order:0,
                         },
                         goods_type:[
                             {

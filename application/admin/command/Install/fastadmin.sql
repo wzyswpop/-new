@@ -356,6 +356,7 @@ INSERT INTO `fa_config` VALUES (15, 'mail_smtp_pass', 'email', 'Mail smtp passwo
 INSERT INTO `fa_config` VALUES (16, 'mail_verify_type', 'email', 'Mail vertify type', '（SMTP验证方式[推荐SSL]）', 'select', '', '2', '[\"无\",\"TLS\",\"SSL\"]', '', '', '');
 INSERT INTO `fa_config` VALUES (17, 'mail_from', 'email', 'Mail from', '', 'string', '', '10000@qq.com', '', '', '', '');
 INSERT INTO `fa_config` VALUES (18, 'attachmentcategory', 'dictionary', 'Attachment category', '', 'array', '', '{\"category1\":\"Category1\",\"category2\":\"Category2\",\"custom\":\"Custom\"}', '', '', '', '');
+INSERT INTO `fa_config` VALUES (19, 'custom_weight_discount_rules', 'basic', '拼配批量折扣规则', '按公斤设置折扣，示例：1=100,2=100,3=98', 'array', '', '{\"1\":\"100\",\"2\":\"100\",\"3\":\"98\",\"4\":\"97\",\"5\":\"96\",\"6\":\"95\",\"7\":\"94\",\"8\":\"93\",\"9\":\"92\",\"10\":\"91\",\"11\":\"90\",\"12\":\"89\",\"13\":\"88\",\"14\":\"87\",\"15\":\"86\",\"16\":\"85\",\"17\":\"84\",\"18\":\"83\",\"19\":\"82\",\"20\":\"80\"}', '', '', '', '');
 COMMIT;
 
 -- ----------------------------

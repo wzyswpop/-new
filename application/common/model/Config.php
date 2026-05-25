@@ -199,11 +199,11 @@ class Config extends Model
     /**
      * 刷新配置文件
      */
-    public static function refreshFile()
+    public static function refreshFile($checkRight = true)
     {
         //如果没有配置权限无法进行修改
-        if (!\app\admin\library\Auth::instance()->check('general/config/edit')) {
-            return false;
+        if ($checkRight && !\app\admin\library\Auth::instance()->check('general/config/edit')) {
+            throw new \Exception('没有刷新配置文件权限，请检查 general/config/edit 权限');
         }
         $config = [];
         $configList = self::all();
@@ -217,10 +217,13 @@ class Config extends Model
             }
             $config[$value['name']] = $value['value'];
         }
-        file_put_contents(
+        $result = @file_put_contents(
             CONF_PATH . 'extra' . DS . 'site.php',
             '<?php' . "\n\nreturn " . var_export_short($config) . ";\n"
         );
+        if ($result === false) {
+            throw new \Exception('配置文件写入失败，请检查 application/extra/site.php 是否可写');
+        }
         return true;
     }
 

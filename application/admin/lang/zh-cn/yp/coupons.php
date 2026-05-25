@@ -14,5 +14,8 @@ return [
     'Createtime'   => '创建时间',
     'Status'       => '状态',
     'Status 1'     => '正常',
-    'Status 2'     => '隐藏'
+    'Status 2'     => '隐藏',
+    'Is_first_order'   => '首单自动券',
+    'Is_first_order 0' => '否',
+    'Is_first_order 1' => '是'
 ];

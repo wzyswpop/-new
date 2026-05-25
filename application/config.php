@@ -277,10 +277,10 @@ return [
         //登录页默认背景图
         'login_background'      => "/uploads/20230617/3d24808bc7f0c1476982246c296c6722.jpg",
         //是否启用多级菜单导航
-//        'multiplenav'           => false,
-        'multiplenav'           => true,
+        // 后台采用库存管理系统风格：主导航统一放在左侧，顶部只保留工具栏。
+        'multiplenav'           => false,
         //是否开启多选项卡(仅在开启多级菜单时起作用)
-        'multipletab'           => true,
+        'multipletab'           => false,
         //是否默认展示子菜单
         'show_submenu'          => false,
         //后台皮肤,为空时表示使用skin-black-blue
@@ -296,7 +296,7 @@ return [
         //插件纯净模式，插件启用后是否删除插件目录的application、public和assets文件夹
         'addon_pure_mode'       => true,
         //允许跨域的域名,多个以,分隔
-        'cors_request_domain'   => 'localhost,127.0.0.1',
+        'cors_request_domain'   => '*',
         //版本号
         'version'               => '1.3.5.20221214',
         //API接口地址

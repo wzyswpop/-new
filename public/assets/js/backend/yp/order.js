@@ -19,15 +19,20 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form','template'], function 
             Template.helper("cdnurl", function(image) {
                 return Fast.api.cdnurl(image);
             });
+            Template.helper("Encode", function (value) {
+                return encodeURIComponent(value || '');
+            });
             Template.helper("Moment", Moment);
             // 初始化表格
             table.bootstrapTable({
                 url: $.fn.bootstrapTable.defaults.extend.index_url,
                 pk: 'id',
                 sortName: 'id',
+                pageSize: 20,
+                pageList: [20, 50, 100],
                 templateView: true,
-                fixedColumns: true,
-                fixedRightNumber: 1,
+                showHeader: false,
+                fixedColumns: false,
                 search:false,
                 columns: [
                     [
@@ -53,9 +58,34 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form','template'], function 
 
             // 为表格绑定事件
             Table.api.bindevent(table);
+            $(".ops-filter-tabs[data-field] a[data-toggle='tab']").off("click.opsfilter").on("click.opsfilter", function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                var link = $(this);
+                var group = link.closest("[data-field]");
+                var field = group.data("field");
+                var value = link.data("value");
+                var object = $("[name='" + field + "']", table.closest(".bootstrap-table").find(".commonsearch-table"));
+                group.find("li").removeClass("active");
+                link.closest("li").addClass("active");
+                $(".panel-heading [data-field='" + field + "'] li", table.closest(".panel-intro")).removeClass("active");
+                $(".panel-heading [data-field='" + field + "'] a[data-value='" + value + "']", table.closest(".panel-intro")).closest("li").addClass("active");
+                if (object.prop("tagName") === "SELECT") {
+                    $("option[value='" + value + "']", object).prop("selected", true);
+                } else {
+                    object.val(value);
+                }
+                table.trigger("uncheckbox");
+                table.bootstrapTable("refresh", {pageNumber: 1});
+                return false;
+            });
             //点击详情
             $(document).on("click", ".detail[data-id]", function () {
                 Backend.api.open('yp/order/detail/id/' + $(this).data('id'), __('查看详情'),{area:['1200px', '780px']});
+            });
+            // 待支付订单改价
+            $(document).on("click", ".btn-change-price[data-id]", function () {
+                Backend.api.open('yp/order/changeprice/ids/' + $(this).data('id'), '修改订单金额', {area:['720px', '500px']});
             });
             // 发货 & 批量发货
             $(document).on("click", ".btn-delivery", function () {
@@ -63,6 +93,34 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form','template'], function 
                     Backend.api.open('yp/order/delivery/ids/' + $(this).data('id'), __('发货'),{area:['1000px', '700px']});
                 }else{
                     Backend.api.open('yp/order/delivery/ids/' + Table.api.selectedids(table), __('批量发货'),{area:['1000px', '700px']});
+                }
+            });
+            $(document).on("click", ".btn-copy-recipient", function () {
+                var productionText = decodeURIComponent($(this).data("production") || '');
+                var text = productionText;
+                if (!text) {
+                    var parts = [
+                        decodeURIComponent($(this).data("name") || ''),
+                        decodeURIComponent($(this).data("phone") || ''),
+                        decodeURIComponent($(this).data("address") || '')
+                    ];
+                    text = parts.filter(function (item) {
+                        return item !== '';
+                    }).join('，');
+                }
+                var fallbackCopy = function () {
+                    var input = $('<textarea readonly></textarea>').val(text).appendTo('body');
+                    input[0].select();
+                    document.execCommand('copy');
+                    input.remove();
+                    Toastr.success('收货信息已复制');
+                };
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(function () {
+                        Toastr.success('收货信息已复制');
+                    }, fallbackCopy);
+                } else {
+                    fallbackCopy();
                 }
             });
             $('.btn-export_log').click(function (){
@@ -83,6 +141,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form','template'], function 
             Controller.api.bindevent();
         },
         delivery: function () {
+            Controller.api.bindevent();
+        },
+        changeprice: function () {
             Controller.api.bindevent();
         },
         api: {

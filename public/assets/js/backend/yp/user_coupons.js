@@ -35,6 +35,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'goods_type', title: __('Goods_type'),operate:false, searchList: {"1":__('Goods_type 1'),"2":__('Goods_type 2')}, formatter: Table.api.formatter.normal},
                         {field: 'amount', title: __('Amount'), operate:false},
                         {field: 'use_money', title: __('Use_money'), operate:false},
+                        {field: 'source', title: __('Source'), searchList: {"manual":__('Source manual'),"first_order":__('Source first_order')}, formatter: Table.api.formatter.normal},
+                        {field: 'source_pid', title: __('Source_pid'), operate:false},
                         {field: 'endtime', title: __('Endtime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
                         {field: 'status', title: __('Status'), searchList: {"1":__('Status 1'),"2":__('Status 2'),"3":__('Status 3')}, formatter: Table.api.formatter.status},

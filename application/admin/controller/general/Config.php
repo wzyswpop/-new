@@ -6,6 +6,7 @@ use app\common\controller\Backend;
 use app\common\library\Email;
 use app\common\model\Config as ConfigModel;
 use think\Cache;
+use think\Config as ThinkConfig;
 use think\Db;
 use think\Exception;
 use think\Validate;
@@ -27,6 +28,9 @@ class Config extends Backend
 
     public function _initialize()
     {
+        if ($this->request->isPost()) {
+            ThinkConfig::set('default_return_type', 'json');
+        }
         parent::_initialize();
         // $this->model = model('Config');
         $this->model = new ConfigModel;

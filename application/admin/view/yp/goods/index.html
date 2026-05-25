@@ -1,33 +1,89 @@
-<div class="panel panel-default panel-intro">
+<div class="panel panel-default panel-intro ops-page ops-goods-page">
     
     <div class="panel-heading">
         {:build_heading(null,FALSE)}
-        <ul class="nav nav-tabs" data-field="status">
-            <li class="{:$Think.get.status === null ? 'active' : ''}"><a href="#t-all" data-value="" data-toggle="tab">{:__('All')}</a></li>
-            {foreach name="statusList" item="vo"}
-            <li class="{:$Think.get.status === (string)$key ? 'active' : ''}"><a href="#t-{$key}" data-value="{$key}" data-toggle="tab">{$vo}</a></li>
+        <ul class="nav nav-tabs" data-field="scope">
+            {foreach name="goodsScopeList" item="vo" key="key"}
+            <li class="{:$Think.get.scope === $key || (!$Think.get.scope && $key === 'all') ? 'active' : ''}"><a href="#scope-{$key}" data-value="{$key}" data-toggle="tab">{$vo}</a></li>
             {/foreach}
         </ul>
     </div>
 
-    <div class="panel-body">
-        <div id="myTabContent" class="tab-content">
-            <div class="tab-pane fade active in" id="one">
-                <div class="widget-body no-padding">
-                    <div id="toolbar" class="toolbar">
-                        <a href="javascript:;" class="btn btn-primary btn-refresh" title="{:__('Refresh')}" ><i class="fa fa-refresh"></i> </a>
-                        <a href="javascript:;" class="btn btn-success btn-add {:$auth->check('yp/goods/add')?'':'hide'}" title="{:__('Add')}" ><i class="fa fa-plus"></i> {:__('Add')}</a>
-                        <a href="javascript:;" class="btn btn-success btn-edit btn-disabled disabled {:$auth->check('yp/goods/edit')?'':'hide'}" title="{:__('Edit')}" ><i class="fa fa-pencil"></i> {:__('Edit')}</a>
-                        <a href="javascript:;" class="btn btn-danger btn-del btn-disabled disabled {:$auth->check('yp/goods/del')?'':'hide'}" title="{:__('Delete')}" ><i class="fa fa-trash"></i> {:__('Delete')}</a>
-                    </div>
-                    <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
-                           data-operate-edit="{:$auth->check('yp/goods/edit')}"
-                           data-operate-del="{:$auth->check('yp/goods/del')}"
-                           width="100%">
-                    </table>
+    <div class="panel-body ops-body">
+        <div class="ops-shell">
+            <div class="ops-header">
+                <div>
+                    <div class="ops-kicker">商品模块</div>
+                    <h1 class="ops-title">咖啡豆资料库</h1>
+                    <p class="ops-subtitle">统一维护咖啡豆基础资料、商城成品规格、定制豆池价格和库存状态。</p>
+                </div>
+                <div class="ops-actions">
+                    <a href="{:url('yp/goods')}?stock_warning=1&ref=addtabs" class="btn btn-default"><i class="fa fa-warning"></i> 库存预警</a>
+                    <a href="javascript:;" class="btn btn-default" onclick="Fast.api.open('yp/goods_category', '标签与分类', {area:['90%','90%']});return false;"><i class="fa fa-tags"></i> 标签与分类</a>
+                    <a href="javascript:;" class="btn btn-primary btn-create-goods {:$auth->check('yp/goods/add')?'':'hide'}" title="{:__('Add')}" ><i class="fa fa-plus"></i> 新增咖啡豆</a>
                 </div>
             </div>
 
+            <div class="ops-guide-grid">
+                <div class="ops-guide-item">
+                    <div class="ops-guide-icon"><i class="fa fa-database"></i></div>
+                    <div>
+                        <div class="ops-guide-title">一豆一档</div>
+                        <div class="ops-guide-text">先建基础资料，再决定是否进入商城或定制。</div>
+                    </div>
+                </div>
+                <div class="ops-guide-item">
+                    <div class="ops-guide-icon"><i class="fa fa-shopping-bag"></i></div>
+                    <div>
+                        <div class="ops-guide-title">商城成品</div>
+                        <div class="ops-guide-text">净含量、烘焙度、价格在多规格里维护。</div>
+                    </div>
+                </div>
+                <div class="ops-guide-item">
+                    <div class="ops-guide-icon"><i class="fa fa-sliders"></i></div>
+                    <div>
+                        <div class="ops-guide-title">定制豆池</div>
+                        <div class="ops-guide-text">单独维护定制名称和元/kg 价格，风味统一在基础信息里维护。</div>
+                    </div>
+                </div>
+                <div class="ops-guide-item">
+                    <div class="ops-guide-icon"><i class="fa fa-archive"></i></div>
+                    <div>
+                        <div class="ops-guide-title">库存成本</div>
+                        <div class="ops-guide-text">库存预警和规格矩阵集中在一个表里处理。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ops-card">
+                <div class="ops-card-tabs">
+                    <ul class="nav nav-tabs ops-filter-tabs ops-goods-scope-tabs" data-field="scope">
+                        {foreach name="goodsScopeList" item="vo" key="key"}
+                        <li class="{:$Think.get.scope === $key || (!$Think.get.scope && $key === 'all') ? 'active' : ''}"><a href="#scope-{$key}" data-value="{$key}" data-toggle="tab">{$vo}</a></li>
+                        {/foreach}
+                    </ul>
+                </div>
+                <div class="ops-card-toolbar">
+                    <div id="toolbar" class="toolbar ops-toolbar">
+                        <a href="javascript:;" class="btn btn-default btn-refresh" title="{:__('Refresh')}" ><i class="fa fa-refresh"></i> 刷新</a>
+                        <a href="javascript:;" class="btn btn-default btn-edit btn-disabled disabled {:$auth->check('yp/goods/edit')?'':'hide'}" title="{:__('Edit')}" ><i class="fa fa-pencil"></i> 编辑</a>
+                        <a href="javascript:;" class="btn btn-default btn-change-status" data-status="1"><i class="fa fa-arrow-up"></i> 商城上架</a>
+                        <a href="javascript:;" class="btn btn-default btn-change-status" data-status="2"><i class="fa fa-arrow-down"></i> 商城下架</a>
+                        <a href="javascript:;" class="btn btn-danger btn-del btn-disabled disabled {:$auth->check('yp/goods/del')?'':'hide'}" title="{:__('Delete')}" ><i class="fa fa-trash"></i> 删除</a>
+                    </div>
+                </div>
+                <div id="myTabContent" class="tab-content ops-table-wrap">
+                    <div class="tab-pane fade active in" id="one">
+                        <div class="widget-body no-padding">
+                            <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
+                                   data-operate-edit="{:$auth->check('yp/goods/edit')}"
+                                   data-operate-del="{:$auth->check('yp/goods/del')}"
+                                   width="100%">
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

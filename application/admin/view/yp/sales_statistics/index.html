@@ -1,0 +1,240 @@
+<div class="panel panel-default panel-intro sales-stat-page">
+    <div class="panel-body">
+        <div class="sales-stat-shell">
+            <div class="sales-stat-header">
+                <div>
+                    <div class="sales-stat-kicker">财务核算</div>
+                    <h1 class="sales-stat-title">销售统计</h1>
+                    <p class="sales-stat-subtitle">真实销售额 = 已支付订单金额 - 售后成功退款金额，退款按处理成功时间归属月份。</p>
+                </div>
+                <form class="sales-stat-filter" method="get">
+                    <select name="year" class="form-control">
+                        {foreach name="years" item="vo"}
+                        <option value="{$vo}" {:$year == $vo ? 'selected' : ''}>{$vo}年</option>
+                        {/foreach}
+                    </select>
+                    <select name="order_type" class="form-control">
+                        <option value="" {:$orderType === '' ? 'selected' : ''}>全部订单</option>
+                        <option value="0" {:$orderType === '0' ? 'selected' : ''}>普通订单</option>
+                        <option value="1" {:$orderType === '1' ? 'selected' : ''}>定制订单</option>
+                    </select>
+                    <select name="payment" class="form-control">
+                        <option value="" {:$payment === '' ? 'selected' : ''}>全部支付</option>
+                        <option value="wechat" {:$payment === 'wechat' ? 'selected' : ''}>微信</option>
+                        <option value="balance" {:$payment === 'balance' ? 'selected' : ''}>余额</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> 查询</button>
+                </form>
+            </div>
+
+            <div class="sales-stat-metrics">
+                <div class="sales-stat-card is-primary">
+                    <div class="sales-stat-label">真实销售额</div>
+                    <div class="sales-stat-value">￥{:number_format($summary.real_sales, 2)}</div>
+                    <div class="sales-stat-meta">总销售额 - 退款金额</div>
+                </div>
+                <div class="sales-stat-card">
+                    <div class="sales-stat-label">总销售额</div>
+                    <div class="sales-stat-value">￥{:number_format($summary.gross_sales, 2)}</div>
+                    <div class="sales-stat-meta">已支付订单 {$summary.paid_order_count} 单</div>
+                </div>
+                <div class="sales-stat-card">
+                    <div class="sales-stat-label">退款金额</div>
+                    <div class="sales-stat-value">￥{:number_format($summary.refund_amount, 2)}</div>
+                    <div class="sales-stat-meta">售后成功 {$summary.refund_count} 单</div>
+                </div>
+                <div class="sales-stat-card">
+                    <div class="sales-stat-label">退款率</div>
+                    <div class="sales-stat-value">{$summary.refund_rate}</div>
+                    <div class="sales-stat-meta">退款金额 / 总销售额</div>
+                </div>
+            </div>
+
+            <div class="sales-stat-chart-card">
+                <div class="sales-stat-section-title">{$year} 年月度趋势</div>
+                <div id="sales-stat-chart" class="sales-stat-chart"></div>
+            </div>
+
+            <div class="sales-stat-table-card">
+                <div class="sales-stat-section-title">月度明细</div>
+                <div class="table-responsive">
+                    <table class="table table-hover sales-stat-table">
+                        <thead>
+                        <tr>
+                            <th>月份</th>
+                            <th class="text-right">支付订单数</th>
+                            <th class="text-right">总销售额</th>
+                            <th class="text-right">退款单数</th>
+                            <th class="text-right">退款金额</th>
+                            <th class="text-right">真实销售额</th>
+                            <th class="text-right">退款率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {foreach name="rows" item="vo"}
+                        <tr>
+                            <td>{$vo.month}</td>
+                            <td class="text-right">{$vo.paid_order_count}</td>
+                            <td class="text-right">￥{:number_format($vo.gross_sales, 2)}</td>
+                            <td class="text-right">{$vo.refund_count}</td>
+                            <td class="text-right">￥{:number_format($vo.refund_amount, 2)}</td>
+                            <td class="text-right sales-stat-real">￥{:number_format($vo.real_sales, 2)}</td>
+                            <td class="text-right">{$vo.refund_rate}</td>
+                        </tr>
+                        {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style type="text/css">
+    .sales-stat-page,
+    .sales-stat-page > .panel-body {
+        background: #f5f5f7;
+    }
+    .sales-stat-page > .panel-body {
+        padding: 0;
+    }
+    .sales-stat-shell {
+        padding: 24px;
+    }
+    .sales-stat-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .sales-stat-kicker {
+        color: #0071e3;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0;
+        margin-bottom: 6px;
+    }
+    .sales-stat-title {
+        margin: 0;
+        color: #1d1d1f;
+        font-size: 26px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+    .sales-stat-subtitle {
+        margin: 8px 0 0;
+        color: #6e6e73;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+    .sales-stat-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    .sales-stat-filter .form-control {
+        width: auto;
+        min-width: 120px;
+        border-radius: 8px;
+    }
+    .sales-stat-filter .btn {
+        border-radius: 8px;
+    }
+    .sales-stat-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+    .sales-stat-card,
+    .sales-stat-chart-card,
+    .sales-stat-table-card {
+        border: 1px solid rgba(0, 0, 0, .08);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+    }
+    .sales-stat-card {
+        padding: 18px;
+    }
+    .sales-stat-card.is-primary {
+        border-color: rgba(0, 113, 227, .24);
+        background: #f4f9ff;
+    }
+    .sales-stat-label {
+        color: #6e6e73;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+    .sales-stat-value {
+        color: #1d1d1f;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+    .sales-stat-meta {
+        color: #86868b;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    .sales-stat-chart-card,
+    .sales-stat-table-card {
+        padding: 18px;
+        margin-top: 16px;
+    }
+    .sales-stat-section-title {
+        color: #1d1d1f;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+    .sales-stat-chart {
+        width: 100%;
+        height: 360px;
+    }
+    .sales-stat-table {
+        margin-bottom: 0;
+    }
+    .sales-stat-table > thead > tr > th {
+        color: #6e6e73;
+        border-bottom: 1px solid rgba(0, 0, 0, .08);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .sales-stat-table > tbody > tr > td {
+        vertical-align: middle;
+        border-top: 1px solid rgba(0, 0, 0, .06);
+        color: #1d1d1f;
+        white-space: nowrap;
+    }
+    .sales-stat-real {
+        color: #0071e3 !important;
+        font-weight: 700;
+    }
+    @media (max-width: 991px) {
+        .sales-stat-header {
+            display: block;
+        }
+        .sales-stat-filter {
+            justify-content: flex-start;
+            margin-top: 14px;
+        }
+        .sales-stat-metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 640px) {
+        .sales-stat-shell {
+            padding: 16px;
+        }
+        .sales-stat-metrics {
+            grid-template-columns: 1fr;
+        }
+        .sales-stat-filter .form-control,
+        .sales-stat-filter .btn {
+            width: 100%;
+        }
+    }
+</style>

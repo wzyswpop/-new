@@ -16,5 +16,10 @@ return [
     'Status 1'      => '待使用',
     'Status 2'      => '已使用',
     'Status 3'      => '已过期',
+    'Source'        => '来源',
+    'Source manual' => '手动领取',
+    'Source first_order' => '首单自动',
+    'Source_pid'    => '来源推广员',
+    'Grant_scene'   => '发放场景',
     'User.nickname' => '昵称'
 ];

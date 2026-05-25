@@ -74,6 +74,10 @@
                 <el-radio :label="item.value"  v-for="(item,index) in status_list">{{item.label}}</el-radio>
             </el-radio-group>
         </el-form-item>
+        <el-form-item label="首单券:">
+            <el-switch v-model="form_data.is_first_order" :active-value="1" :inactive-value="0" active-text="自动发放" inactive-text="普通券"></el-switch>
+            <div style="color:#999;font-size:12px;margin-top:4px">开启后，新用户首次登录、老用户通过推广员分享进入且未领过首单券时自动发放。</div>
+        </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="onSubmit">提交</el-button>
         </el-form-item>

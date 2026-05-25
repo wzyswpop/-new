@@ -72,7 +72,19 @@ class Address extends Base {
         if(!$id){
             $this->error();
         }
-        $this->model->where(['user_id' => $this->auth->id,'id' => $id])->delete();
+        $info = $this->model->where(['user_id' => $this->auth->id,'id' => $id])->find();
+        if(!$info){
+            $this->error('地址不存在');
+        }
+        $isDefault = (int)$info['is_default'] === 1;
+        $info->delete();
+        if($isDefault){
+            $next = $this->model->where(['user_id' => $this->auth->id])->order('id desc')->find();
+            if($next){
+                $next->is_default = 1;
+                $next->save();
+            }
+        }
         $this->success();
     }
 

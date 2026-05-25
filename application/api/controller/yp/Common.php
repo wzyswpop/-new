@@ -4,6 +4,7 @@ namespace app\api\controller\yp;
 use app\common\exception\UploadException;
 use app\common\library\Upload;
 use app\api\model\Goods;
+use app\api\model\SkuPrice;
 
 class Common extends Base{
 
@@ -17,7 +18,7 @@ class Common extends Base{
         if(!$name){
             $this->error();
         }
-        $arr = ['commission','service','privacy','share_image','vip_article','withdrawal_service','sign_article','avatar'];
+        $arr = ['commission','service','privacy','share_image','share_title','vip_article','withdrawal_service','sign_article','avatar'];
         if(is_array($name)){
             foreach ($name as $v){
                 if(!in_array($v,$arr)){
@@ -57,9 +58,15 @@ class Common extends Base{
         $config = getValues(['index_carousel','index_video'],true);
         $carousel = $config['index_carousel'];
         $video = $config['index_video'];
-        $goods_list = Goods::where(['is_hot' => 1,'status' => '1'])->field('id,name,money,category_id,image')->order('weigh desc,createtime desc')->select();
+        $goods_list = Goods::where(['is_hot' => 1,'status' => '1','is_shop_sale' => 1])->field('id,name,money,category_id,image,is_stock')->order('weigh desc,createtime desc')->select();
         foreach ($goods_list as $v){
             $v->append(['goods_category']);
+            $money = SkuPrice::where(['goods_id' => $v['id'], 'status' => 'up'])
+                ->where('stock', '>', 0)
+                ->min('money');
+            if ($money !== null && $money !== '') {
+                $v['money'] = number_format((float)$money, 2, '.', '');
+            }
         }
         $this->success('成功',compact('carousel','video','goods_list'));
     }

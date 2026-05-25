@@ -6,7 +6,7 @@ use app\common\controller\Backend;
 use think\Db;
 
 /**
- * 定制方案
+ * 热门配方
  *
  * @icon fa fa-circle-o
  */

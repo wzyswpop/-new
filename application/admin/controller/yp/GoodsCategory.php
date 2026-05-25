@@ -23,6 +23,7 @@ class GoodsCategory extends Backend
         parent::_initialize();
         $this->model = new \app\admin\model\yp\GoodsCategory;
         $this->view->assign("statusList", $this->model->getStatusList());
+        $this->view->assign("showsList", $this->model->getShowsList());
     }
 
 
